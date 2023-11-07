@@ -1,3 +1,5 @@
+import image from "../assets/image/photo01.png";
+
 export default function Select02() {
   return (
     <>
@@ -8,16 +10,12 @@ export default function Select02() {
           </h1>
 
           <div className="w-full md:mt-0 sm:max-w-md xl:p-0">
-            <div className="mb-4 py-2 p-6 space-y-4 bg-white rounded-lg shadow dark:border md:space-y-6 sm:p-8 dark:bg-gray-800 dark:border-gray-700">
+            <div className="mb-4 py-2 space-y-4 bg-white rounded-lg shadow dark:border md:space-y-6 dark:bg-gray-800 dark:border-gray-700">
               <ul className="divide-y divide-gray-200 dark:divide-gray-700">
-                <li className="py-3 sm:py-4">
+                <li className="py-3 p-6 sm:py-4 hover:bg-gray-100">
                   <a href="/" className="flex items-center space-x-4">
                     <div className="flex-shrink-0">
-                      <img
-                        className="w-8 h-8 rounded-full"
-                        src="../assets/image/photo01.png"
-                        alt=""
-                      />
+                      <img className="w-8 h-8 rounded-full" src={image} alt="" />
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-md font-sans text-gray-900 truncate dark:text-white">
@@ -26,14 +24,10 @@ export default function Select02() {
                     </div>
                   </a>
                 </li>
-                <li className="py-3 sm:py-4">
+                <li className="py-3 p-6 sm:py-4 hover:bg-gray-100">
                   <a href="/" className="flex items-center space-x-4">
                     <div className="flex-shrink-0">
-                      <img
-                        className="w-8 h-8 rounded-full"
-                        src="../assets/image/photo01.png"
-                        alt=""
-                      />
+                      <img className="w-8 h-8 rounded-full" src={image} alt="" />
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="text-md font-sans text-gray-900 truncate dark:text-white">
