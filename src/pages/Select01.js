@@ -1,6 +1,14 @@
-import image from "../assets/image/photo01.png";
+import Button from "../components/Button";
+import Card from "../components/Card";
+
+import { select01Data } from "../data/data";
+import { useState, useEffect } from "react";
 
 export default function Select01() {
+  // const [selectedItem, setselectedItem] = useState([]);
+
+  // function selectionHandler(e) {}
+
   return (
     <>
       <section className="bg-gray-50 dark:bg-gray-900">
@@ -12,46 +20,15 @@ export default function Select01() {
           <div className="w-full md:mt-0 sm:max-w-md xl:p-0">
             <div className="mb-4 py-3 space-y-4 bg-white rounded-lg shadow dark:border md:space-y-6  dark:bg-gray-800 dark:border-gray-700">
               <ul className="divide-y divide-gray-200 dark:divide-gray-700">
-                <li className="py-3 p-6 sm:py-4 hover:bg-gray-100">
-                  <a href="/" className="flex items-center space-x-4">
-                    <div className="flex-shrink-0">
-                      <img className="w-8 h-8 rounded-full" src={image} alt="" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-sans font-medium text-gray-500 truncate dark:text-gray-400">
-                        OOOO党
-                      </p>
-                      <p className="text-sm font-sans text-gray-900 truncate dark:text-white">
-                        立候補者の名前
-                      </p>
-                    </div>
-                  </a>
-                </li>
-
-                <li className="py-3 p-6 sm:py-4 hover:bg-gray-100">
-                  <a href="/" className="flex items-center space-x-4">
-                    <div className="flex-shrink-0">
-                      <img className="w-8 h-8 rounded-full" src={image} alt="" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-sans font-medium text-gray-500 truncate dark:text-gray-400">
-                        OOOO党
-                      </p>
-                      <p className="text-sm font-sans text-gray-900 truncate dark:text-white">
-                        立候補者の名前
-                      </p>
-                    </div>
-                  </a>
-                </li>
+                {select01Data.map((data) => {
+                  return (
+                    <Card card={{ main: data.party, sub: data.name, image: data.image }}></Card>
+                  );
+                })}
               </ul>
             </div>
 
-            <button
-              type="submit"
-              className="w-full font-sans text-white bg-primary-600 hover:bg-primary-700 focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800"
-            >
-              次へ
-            </button>
+            <Button btn={{ text: "次へ", color: "main", navigateTo: "select02" }}></Button>
           </div>
         </div>
       </section>
