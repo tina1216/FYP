@@ -1,4 +1,3 @@
-import image from "../assets/image/photo01.png";
 import Button from "../components/Button";
 import { select02Data } from "../data/data";
 import Card from "../components/Card";
@@ -15,8 +14,18 @@ export default function Select02() {
           <div className="w-full md:mt-0 sm:max-w-md xl:p-0">
             <div className="mb-4 py-2 space-y-4 bg-white rounded-lg shadow dark:border md:space-y-6 dark:bg-gray-800 dark:border-gray-700">
               <ul className="divide-y divide-gray-200 dark:divide-gray-700">
-                {select02Data.map((data) => {
-                  return <Card card={{ main: data.party, sub: "", image: data.image }}></Card>;
+                {select02Data.map((data, i) => {
+                  return (
+                    <Card
+                      key={i}
+                      card={{
+                        id: data.id.toString(),
+                        main: data.party,
+                        sub: "",
+                        image: data.image,
+                      }}
+                    ></Card>
+                  );
                 })}
               </ul>
             </div>

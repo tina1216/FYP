@@ -1,7 +1,17 @@
 export default function Card({ card }) {
   return (
-    <li className="py-3 p-6 sm:py-4 hover:bg-gray-100">
-      <a href="/" className="flex items-center space-x-4">
+    <li className="flex items-center">
+      <input
+        type="checkbox"
+        id={`${card.id}`}
+        value={`${card.id}`}
+        className="hidden peer"
+        required=""
+      ></input>
+      <label
+        htmlFor={`${card.id}`}
+        className="flex items-center justify-between  p-6 py-3 sm:py-4 w-full cursor-pointer hover:bg-blue-50 peer-checked:bg-blue-100"
+      >
         <div className="flex-shrink-0">
           <img className="w-8 h-8 rounded-full" src={card.image} alt={card.main} />
         </div>
@@ -15,7 +25,7 @@ export default function Card({ card }) {
           )}
           <p className="text-sm font-sans text-gray-900 truncate dark:text-white"> {card.main}</p>
         </div>
-      </a>
+      </label>
     </li>
   );
 }
