@@ -1,8 +1,23 @@
+import React, { useState, useEffect } from "react";
 import Button from "../components/Button";
 import { select02Data } from "../data/data";
 import Card from "../components/Card";
 
 export default function Select02() {
+  const [selectedItem, setSelectedItem] = useState([]);
+  const [activeId, setActiveId] = useState("");
+
+  useEffect(() => {
+    console.log("Newly selected item 2:", selectedItem);
+    console.log("activeId 2", activeId);
+  }, [selectedItem, activeId]);
+
+  const handleSelectedItem = (obj) => {
+    setActiveId(obj.id);
+    const newItem = { ...obj };
+    setSelectedItem(newItem);
+  };
+
   return (
     <>
       <section className="bg-gray-50 dark:bg-gray-900">
@@ -24,6 +39,8 @@ export default function Select02() {
                         sub: "",
                         image: data.image,
                       }}
+                      onClick={() => handleSelectedItem(data)}
+                      isActive={activeId === data.id ? true : false}
                     ></Card>
                   );
                 })}

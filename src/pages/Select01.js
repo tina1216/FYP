@@ -1,14 +1,21 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import Button from "../components/Button";
 import Card from "../components/Card";
 import { select01Data } from "../data/data";
 
 export default function Select01() {
-  const [selectedIndex, setSelectedIndex] = useState("");
+  const [selectedItem, setSelectedItem] = useState([]);
+  const [activeId, setActiveId] = useState("");
 
-  const handleSelect = (index) => {
-    setSelectedIndex(index);
-    console.log(index);
+  useEffect(() => {
+    console.log("Newly selected item 1:", selectedItem);
+    console.log("activeId 1", activeId);
+  }, [selectedItem, activeId]);
+
+  const handleSelectedItem = (obj) => {
+    setActiveId(obj.id);
+    const newItem = { ...obj };
+    setSelectedItem(newItem);
   };
 
   return (
@@ -22,17 +29,18 @@ export default function Select01() {
           <div className="w-full md:mt-0 sm:max-w-md xl:p-0">
             <div className="mb-4 py-3 space-y-4 bg-white rounded-lg shadow dark:border md:space-y-6  dark:bg-gray-800 dark:border-gray-700">
               <ul className="divide-y divide-gray-200 dark:divide-gray-700">
-                {select01Data.map((data, i) => {
+                {select01Data.map((data) => {
                   return (
                     <Card
-                      key={i}
+                      key={data.id}
                       card={{
                         id: data.id.toString(),
                         main: data.party,
                         sub: data.name,
                         image: data.image,
                       }}
-                      onClick={() => handleSelect(i)}
+                      onClick={() => handleSelectedItem(data)}
+                      isActive={activeId === data.id ? true : false}
                     ></Card>
                   );
                 })}

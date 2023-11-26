@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
 export default function Button({ btn }) {
-  const navigate = useNavigate();
+  // const navigate = useNavigate();
 
   // useEffect(() => {
   //   const handleClick = (page) => {
@@ -12,8 +12,8 @@ export default function Button({ btn }) {
   // });
 
   const handleClick = (page) => {
-    console.log(page);
-    navigate(`/${page}`);
+    // console.log(page);
+    // navigate(`/${page}`);
   };
 
   if (btn.color === "main") {

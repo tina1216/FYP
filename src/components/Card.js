@@ -1,17 +1,22 @@
-export default function Card({ card }) {
+// import { useState, useEffect } from "react";
+
+export default function Card({ card, onClick, isActive }) {
   return (
-    <li className="flex items-center">
-      <input
-        type="checkbox"
-        id={`${card.id}`}
-        value={`${card.id}`}
-        className="hidden peer"
-        required=""
-      ></input>
+    <li className={`flex items-center `} onClick={onClick}>
       <label
         htmlFor={`${card.id}`}
-        className="flex items-center justify-between  p-6 py-3 sm:py-4 w-full cursor-pointer hover:bg-blue-50 peer-checked:bg-blue-100"
+        className={`flex items-center justify-between  p-6 py-3 sm:py-4 w-full cursor-pointer ${
+          isActive ? "bg-blue-100" : "hover:bg-blue-50 peer-checked:bg-blue-100"
+        }`}
       >
+        <input
+          type="checkbox"
+          id={`${card.id}`}
+          value={`${card.id}`}
+          className="hidden"
+          required=""
+        ></input>
+
         <div className="flex-shrink-0">
           <img className="w-8 h-8 rounded-full" src={card.image} alt={card.main} />
         </div>
