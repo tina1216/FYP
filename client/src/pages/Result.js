@@ -2,10 +2,10 @@ import Table from "../components/Table";
 
 export default function Result() {
   return (
-    <section className="bg-gray-50 dark:bg-gray-900">
+    <section className="flex flex-col justify-center h-screenbg-gray-50 dark:bg-gray-900">
       <div className="gap-6 flex flex-col items-center justify-center px-6 py-8 lg:py-0">
         <h1 className="text-xl font-sans font-bold leading-tight tracking-tight text-gray-900 mt-6 md:text-2xl dark:text-white">
-          選挙結果
+          Result
         </h1>
 
         <div className="pb-4">

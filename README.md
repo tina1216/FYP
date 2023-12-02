@@ -2,6 +2,10 @@
 
 Onlin E-voting System Using Homomorphic Encryption and Blockchain Technology toEncrypt Voter Data.
 
-## /Server
+## Activate the environment
 
-`flask --app hello run`
+Before you work on your project, activate the corresponding environment:
+
+Mac OS:
+`$ . .venv/bin/activate`
+`flask --app app run`

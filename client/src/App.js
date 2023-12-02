@@ -4,6 +4,7 @@ import Select02 from "./pages/Select02";
 import Select03 from "./pages/Select03";
 import Comfirm from "./pages/Comfirm";
 import Result from "./pages/Result";
+import Submitted from "./pages/Submitted";
 
 import { Routes, Route } from "react-router-dom";
 
@@ -17,6 +18,7 @@ const App = () => {
         <Route path="/select03" element={<Select03 />} />
         <Route path="/comfirm" element={<Comfirm />} />
         <Route path="/result" element={<Result />} />
+        <Route path="/submitted" element={<Submitted />} />
       </Routes>
     </>
   );
