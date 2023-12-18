@@ -1,6 +1,7 @@
 const express = require("express");
 require("dotenv").config();
 const { PrismaClient } = require("@prisma/client");
+const controllers = require("./src/controllers/");
 
 const prisma = new PrismaClient();
 const port = process.env.PORT;
@@ -62,6 +63,9 @@ app.post("/election", async (req, res) => {
   });
   res.json(newElection);
 });
+
+app.use(controllers.notFound);
+app.use(controllers.handleErrors);
 
 //---------------
 app.listen(port, () => {
