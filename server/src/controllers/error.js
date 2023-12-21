@@ -10,4 +10,4 @@ const notFound = (req, res, next) => {
   next(err);
 };
 
-module.exports = { handleErrors, notFound };
+export default { handleErrors, notFound };

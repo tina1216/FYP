@@ -7,12 +7,23 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model RefreshToken {
+  id          Int      @id @default(autoincrement())
+  hashedToken String
+  voterId     Int
+  Voter       Voter    @relation(fields: [voterId], references: [id], onDelete: Cascade)
+  revoked     Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
 model Voter {
-  id       Int     @id @default(autoincrement())
-  idNumber String  @unique
-  password String
-  role     Role    @default(USER)
-  hasVoted Boolean @default(false)
+  id           Int            @id @default(autoincrement())
+  idNumber     String         @unique
+  password     String
+  role         Role           @default(USER)
+  hasVoted     Boolean        @default(false)
+  RefreshToken RefreshToken[]
 }
 
 model Election {
