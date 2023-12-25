@@ -3,7 +3,7 @@ import controllers from "../controllers/auth.js";
 
 const authRoutes = express.Router();
 
-authRoutes.get("/login", (req, res) => {
+authRoutes.post("/login", (req, res) => {
   controllers.login(req, res);
 });
 
