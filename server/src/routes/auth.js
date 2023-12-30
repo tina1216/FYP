@@ -1,14 +1,20 @@
-import express from "express";
-import controllers from "../controllers/auth.js";
+const express = require("express");
+const {
+  login,
+  signup,
+  refreshToken,
+  revokeRefreshTokens,
+  profile,
+} = require("../controllers/auth.js");
+const errorHandler = require("../../errorHandler.js");
+const { isAuthenticated } = require("../middlewares/auth.js");
 
 const authRoutes = express.Router();
 
-authRoutes.post("/login", (req, res) => {
-  controllers.login(req, res);
-});
+authRoutes.post("/login", errorHandler(login));
+authRoutes.post("/signup", errorHandler(signup));
+authRoutes.post("/refreshToken", errorHandler(refreshToken));
+authRoutes.post("/revokeRefreshTokens", errorHandler(revokeRefreshTokens));
+authRoutes.get("/profile", isAuthenticated, errorHandler(profile));
 
-authRoutes.post("/signup", (req, res) => {
-  controllers.signup(req, res);
-});
-
-export default authRoutes;
+module.exports = authRoutes;

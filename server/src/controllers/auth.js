@@ -1,67 +1,130 @@
-import { PrismaClient } from "@prisma/client";
-import { hashSync, compareSync } from "bcrypt";
-import jsonwebtoken from "jsonwebtoken";
-import { badRequestsException } from "../exception/badRequests";
-import ErrorCode from "../exception/root";
+const { hashSync, compareSync } = require("bcrypt");
+const { v4: uuidv4 } = require("uuid");
+const jsonwebtoken = require("jsonwebtoken");
 
-const prisma = new PrismaClient();
+const badRequestsException = require("../exception/badRequests.js");
+const ErrorCode = require("../exception/root.js");
+const { UnprocessableEntity } = require("../exception/validation.js");
+const notFoundException = require("../exception/notFound.js");
 
+const { generateTokens } = require("../utils/jwt.js");
+const {
+  addRefreshTokenToWhitelist,
+  findRefreshTokenById,
+  deleteRefreshToken,
+  revokeTokens,
+} = require("../services/auth.js");
+const {
+  findVoterByIdNumber,
+  createVoterByIdNumberAndPassword,
+  findVoterById,
+} = require("../services/voters.js");
+const { hashToken } = require("../utils/hashToken.js");
+
+// signup
 const signup = async (req, res) => {
   const { idNumber, password } = req.body;
 
-  try {
-    let voter = await prisma.voter.findFirst({
-      where: {
-        idNumber,
-      },
-    });
+  let voter = await findVoterByIdNumber(idNumber);
 
-    if (voter) {
-      throw new badRequestsException("User not found.", ErrorCode.USER_ALREADY_EXISTS);
-    }
-
-    voter = await prisma.voter.create({
-      data: {
-        idNumber: idNumber,
-        password: hashSync(password, 10),
-      },
-    });
-    res.json(voter);
-  } catch (err) {
-    console.error(err);
-    res.status(500).send("An error occurred");
+  if (voter) {
+    throw new badRequestsException("User already exists.", ErrorCode.USER_ALREADY_EXISTS);
   }
+  const jti = uuidv4();
+  voter = await createVoterByIdNumberAndPassword({ idNumber, password });
+  const { accessToken, refreshToken } = generateTokens(voter, jti);
+  await addRefreshTokenToWhitelist({ jti, refreshToken, voterId: voter.id });
+
+  res.json({
+    voter,
+    accessToken,
+    refreshToken,
+  });
 };
 
+// login
 const login = async (req, res) => {
   const { idNumber, password } = req.body;
 
-  try {
-    let voter = await prisma.voter.findFirst({
-      where: {
-        idNumber,
-      },
-    });
+  const existingVoter = await findVoterByIdNumber(idNumber);
 
-    if (!voter) {
-      throw new Error("Account does not exist");
-    }
-
-    if (!compareSync(password, voter.password)) {
-      throw new Error("Incorrect password");
-    }
-
-    const token = jsonwebtoken.sign(
-      {
-        id: voter.id,
-      },
-      process.env.JWT_ACCESS_SECRET
-    );
-    res.status(200).json({ voter, token });
-  } catch (err) {
-    console.error(err);
-    res.status(500).send("An error occurred");
+  if (!existingVoter) {
+    throw new notFoundException("Account not found.", ErrorCode.USER_NOT_FOUND);
   }
+
+  if (!compareSync(password, existingVoter.password)) {
+    throw new badRequestsException("Incorrect password or ID number", ErrorCode.INCORRECT_PASSWORD);
+  }
+
+  const jti = uuidv4();
+  const { accessToken, refreshToken } = generateTokens(existingVoter, jti);
+  await addRefreshTokenToWhitelist({ jti, refreshToken, voterId: existingVoter.id });
+
+  res.json({
+    existingVoter,
+    accessToken,
+    refreshToken,
+  });
 };
 
-export default { login, signup };
+// /profile
+const profile = async (req, res) => {
+  const voterId = req.voter.voterId;
+  const voter = await findVoterById(voterId);
+  delete voter.password;
+  res.send(voter);
+};
+
+//refresh token
+const refreshToken = async (req, res) => {
+  const { refreshToken } = req.body;
+
+  if (!refreshToken) {
+    res.status(400);
+    throw new Error("Missing refresh token.");
+  }
+
+  const payload = jsonwebtoken.verify(refreshToken, process.env.JWT_REFRESH_SECRET);
+  const savedRefreshToken = await findRefreshTokenById(payload.jti);
+
+  if (!savedRefreshToken || savedRefreshToken.revoked === true) {
+    throw new unauthorisedException("Unauthorized", ErrorCode.UNAUTHORIZED);
+  }
+
+  const hashedToken = hashToken(refreshToken);
+
+  if (hashedToken !== savedRefreshToken.hashedToken) {
+    throw new unauthorisedException("Unauthorized", ErrorCode.UNAUTHORIZED);
+  }
+
+  const voter = await findVoterByIdNumber(payload.voterId);
+
+  if (!voter) {
+    throw new unauthorisedException("Unauthorized", ErrorCode.UNAUTHORIZED);
+  }
+
+  await deleteRefreshToken(savedRefreshToken.id);
+
+  const jti = uuidv4();
+  const { accessToken, refreshToken: newRefreshToken } = generateTokens(voter, jti);
+  await addRefreshTokenToWhitelist({
+    jti,
+    refreshToken: newRefreshToken,
+    voterId: voter.id,
+  });
+
+  res.json({
+    accessToken,
+    refreshToken: newRefreshToken,
+  });
+};
+
+// This endpoint is only for demo purpose.
+// Move this logic where you need to revoke the tokens( for ex, on password reset)
+const revokeRefreshTokens = async (req, res) => {
+  const { voterId } = req.body;
+  await revokeTokens(voterId);
+  res.json({ message: `Tokens revoked for user with id #${voterId}` });
+};
+
+module.exports = { login, signup, profile, refreshToken, revokeRefreshTokens };

@@ -1,13 +1,18 @@
-import express from "express";
-import dotenv from "dotenv";
-import cors from "cors";
-import bodyParser from "body-parser";
-import { PrismaClient } from "@prisma/client";
+const express = require("express");
+const dotenv = require("dotenv");
+const cors = require("cors");
+const bodyParser = require("body-parser");
+const { PrismaClient } = require("@prisma/client");
 
-import errorControllers from "./src/controllers/error.js";
-import rootRouter from "./src/routes/index.js";
+const errorControllers = require("./src/controllers/error.js");
+const rootRouter = require("./src/routes/index.js");
+const { errorMiddleware } = require("./src/middlewares/errors.js");
+const SignupSchema = require("./src/schema/users.js");
 
-const prisma = new PrismaClient();
+const prisma = new PrismaClient({
+  log: ["query"],
+});
+
 const port = process.env.PORT;
 const app = express();
 dotenv.config();
@@ -15,6 +20,8 @@ dotenv.config();
 app.use(express.json());
 app.use(cors());
 app.use(bodyParser.json());
+
+app.use(errorMiddleware);
 
 app.use("/api", rootRouter);
 

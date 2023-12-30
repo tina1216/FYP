@@ -35,21 +35,6 @@ async function main() {
         idNumber: "CD3456899",
         password: "Yz_3456",
       },
-      {
-        idNumber: "DE4567900",
-        password: "ZaLk_4567",
-        hasVoted: true,
-      },
-      {
-        idNumber: "EF5678011",
-        password: "AW-5678",
-        hasVoted: true,
-      },
-      {
-        idNumber: "FG6789122",
-        password: "BBY@6789",
-        hasVoted: true,
-      },
     ],
   });
 
@@ -213,37 +198,34 @@ async function main() {
   const createManyVotes = await prisma.vote.createMany({
     data: [
       {
-        electionId: 1,
         voterId: 1,
-        encryptedVote: "123",
+        encryptedVote: "candidate A", //candidate name -> Id
       },
       {
-        electionId: 2,
-        voterId: 1,
-        encryptedVote: "456",
+        voterId: 2,
+        encryptedVote: "candidate B", //candidate name -> Id
       },
       {
-        electionId: 3,
-        voterId: 1,
-        encryptedVote: "789",
+        voterId: 3,
+        encryptedVote: "candidate C", //candidate name -> Id
       },
     ],
   });
 
   // results
-  const createManyResults = await prisma.results.createMany({
+  const createManyResults = await prisma.result.createMany({
     data: [
       {
-        electionId: 1,
-        TotalEncryptedVote: "144",
+        candidateId: 1,
+        TotalEncryptedVote: "145", // count total votes -> decrypt
       },
       {
-        electionId: 2,
-        TotalEncryptedVote: "111",
+        candidateId: 2,
+        TotalEncryptedVote: "110",
       },
       {
-        electionId: 3,
-        TotalEncryptedVote: "222",
+        candidateId: 3,
+        TotalEncryptedVote: "220",
       },
     ],
   });
