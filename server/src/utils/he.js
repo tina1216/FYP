@@ -1,14 +1,10 @@
 (async () => {
   const SEAL = require("node-seal");
 
-  // Wait for the web assembly to fully initialize
+  // Initialize SEAL
   const seal = await SEAL();
 
-  ////////////////////////
   // Encryption Parameters
-  ////////////////////////
-
-  // Create a new EncryptionParameters
   const schemeType = seal.SchemeType.bfv;
   const securityLevel = seal.SecurityLevel.tc128;
   const polyModulusDegree = 4096;
@@ -16,123 +12,121 @@
   const bitSize = 20;
 
   const encParms = seal.EncryptionParameters(schemeType);
-
-  // Assign Poly Modulus Degree
   encParms.setPolyModulusDegree(polyModulusDegree);
-
-  // Create a suitable set of CoeffModulus primes
   encParms.setCoeffModulus(seal.CoeffModulus.Create(polyModulusDegree, Int32Array.from(bitSizes)));
-
-  // Assign a PlainModulus (only for bfv/bgv scheme type)
   encParms.setPlainModulus(seal.PlainModulus.Batching(polyModulusDegree, bitSize));
 
-  ////////////////////////
   // Context
-  ////////////////////////
-
-  // Create a new Context
   const context = seal.Context(encParms, true, securityLevel);
-
-  // Helper to check if the Context was created successfully
   if (!context.parametersSet()) {
-    throw new Error(
-      "Could not set the parameters in the given context. Please try different encryption parameters."
-    );
+    throw new Error("Could not set the parameters in the given context.");
   }
 
-  ////////////////////////
   // Keys
-  ////////////////////////
-
-  // Create a new KeyGenerator
   const keyGenerator = seal.KeyGenerator(context);
-
-  // Get the SecretKey from the keyGenerator
   const secretKey = keyGenerator.secretKey();
-
-  // Get the PublicKey from the keyGenerator
   const publicKey = keyGenerator.createPublicKey();
 
-  ////////////////////////
   // Instances
-  ////////////////////////
-
-  // Create an Evaluator
   const evaluator = seal.Evaluator(context);
-
-  // Create a BatchEncoder
   const batchEncoder = seal.BatchEncoder(context);
-
-  // Create an Encryptor
   const encryptor = seal.Encryptor(context, publicKey);
-
-  // Create a Decryptor
   const decryptor = seal.Decryptor(context, secretKey);
 
-  ////////////////////////
-  // Homomorphic Functions
-  ////////////////////////
+  // Store Encrypted Votes
+  const encryptedVotesStorage = [];
 
-  // Simulate votes from 10 users
-  const users = [123, 457, 890, 567, 321, 654, 789, 234, 876, 543];
-  const candidates = ["1", "2", "3"];
-
-  // Initialize vote counters for each candidate
-  let voteCountCanA = 0;
-  let voteCountCanB = 0;
-  let voteCountCanC = 0;
-
-  // Encrypt and accumulate votes for each candidate separately
-  const combinedResultCan1 = seal.CipherText();
-  const combinedResultCan2 = seal.CipherText();
-  const combinedResultCan3 = seal.CipherText();
-
-  // Initialize with encrypted zero
-  const zeroPlainText = seal.PlainText();
-  batchEncoder.encode(Int32Array.from([0]), zeroPlainText);
-  encryptor.encrypt(zeroPlainText, combinedResultCan1);
-  encryptor.encrypt(zeroPlainText, combinedResultCan2);
-  encryptor.encrypt(zeroPlainText, combinedResultCan3);
-
-  for (const userID of users) {
-    const candidateID = candidates[Math.floor(Math.random() * candidates.length)];
-
-    // Log user votes
+  function encryptAndStoreVote({ userID, candidateID, electionId }) {
     console.log(`User ${userID} voted for Candidate ${candidateID}`);
 
-    // Increment the appropriate vote counter
-    if (candidateID === "1") {
-      voteCountCanA++;
-    } else if (candidateID === "2") {
-      voteCountCanB++;
-    } else if (candidateID === "3") {
-      voteCountCanC++;
-    }
+    // Encode the vote as a vector
+    const voteVector = new Array(candidates.length).fill(0);
+    voteVector[parseInt(candidateID) - 1] = 1; // CandidateID assumed to start from '1'
+    const votePlainText = seal.PlainText();
+    batchEncoder.encode(Int32Array.from(voteVector), votePlainText);
+    const encryptedVote = seal.CipherText();
+    encryptor.encrypt(votePlainText, encryptedVote);
+
+    // Serialize and store the encrypted vote
+    const serializedEncryptedVote = encryptedVote.save();
+    const voteRecord = { userID, vote: serializedEncryptedVote, electionId };
+    encryptedVotesStorage.push(voteRecord);
   }
 
-  // Encrypt and add the vote counts
-  const voteCountCanAPlaintext = seal.PlainText();
-  const voteCountCanBPlaintext = seal.PlainText();
-  const voteCountCanCPlaintext = seal.PlainText();
+  function retrieveAndTallyVotes(encryptedVoteRecords) {
+    // Initialize an encrypted total vote count
+    let totalEncryptedVoteCounts = seal.CipherText();
+    const zeroPlainText = seal.PlainText();
+    batchEncoder.encode(Int32Array.from(new Array(candidates.length).fill(0)), zeroPlainText);
+    encryptor.encrypt(zeroPlainText, totalEncryptedVoteCounts);
 
-  batchEncoder.encode(Int32Array.from([voteCountCanA]), voteCountCanAPlaintext);
-  batchEncoder.encode(Int32Array.from([voteCountCanB]), voteCountCanBPlaintext);
-  batchEncoder.encode(Int32Array.from([voteCountCanC]), voteCountCanCPlaintext);
+    // Aggregate all votes in the provided records
+    encryptedVoteRecords.forEach(({ vote: serializedEncryptedVote }) => {
+      const encryptedVote = seal.CipherText();
+      encryptedVote.load(context, serializedEncryptedVote);
+      totalEncryptedVoteCounts = evaluator.add(totalEncryptedVoteCounts, encryptedVote);
+    });
 
-  encryptor.encrypt(voteCountCanAPlaintext, combinedResultCan1);
-  encryptor.encrypt(voteCountCanBPlaintext, combinedResultCan2);
-  encryptor.encrypt(voteCountCanCPlaintext, combinedResultCan3);
+    // Decrypt and log the final result for each candidate
+    const plainTextResult = seal.PlainText();
+    decryptor.decrypt(totalEncryptedVoteCounts, plainTextResult);
+    const voteCounts = batchEncoder.decode(plainTextResult);
+    candidates.forEach((candidate, index) => {
+      console.log(`Final Tally for Candidate ${candidate}:`, voteCounts[index]);
+    });
+  }
 
-  // Decrypt and log the final result for each candidate
-  const plainTextResultCan1 = seal.PlainText();
-  const plainTextResultCan2 = seal.PlainText();
-  const plainTextResultCan3 = seal.PlainText();
+  const candidates = ["1", "2", "3"];
+  const users = [
+    { userID: "123", candidateID: "1" },
+    { userID: "456", candidateID: "2" },
+    { userID: "789", candidateID: "3" },
+    { userID: "101", candidateID: "1" },
+    { userID: "112", candidateID: "2" },
+    { userID: "131", candidateID: "3" },
+    { userID: "415", candidateID: "1" },
+    { userID: "161", candidateID: "2" },
+    { userID: "718", candidateID: "3" },
+    { userID: "191", candidateID: "1" },
+    { userID: "120", candidateID: "2" },
+    { userID: "131", candidateID: "3" },
+    { userID: "141", candidateID: "1" },
+    { userID: "151", candidateID: "2" },
+    { userID: "161", candidateID: "3" },
+    { userID: "171", candidateID: "1" },
+    { userID: "181", candidateID: "2" },
+    { userID: "191", candidateID: "3" },
+    { userID: "201", candidateID: "1" },
+    { userID: "211", candidateID: "2" },
+    { userID: "221", candidateID: "3" },
+    { userID: "231", candidateID: "1" },
+    { userID: "241", candidateID: "2" },
+    { userID: "251", candidateID: "3" },
+    { userID: "261", candidateID: "1" },
+    { userID: "271", candidateID: "2" },
+    { userID: "281", candidateID: "3" },
+    { userID: "291", candidateID: "1" },
+    { userID: "301", candidateID: "2" },
+    { userID: "311", candidateID: "3" },
+    { userID: "321", candidateID: "1" },
+    { userID: "331", candidateID: "2" },
+    { userID: "341", candidateID: "3" },
+    { userID: "351", candidateID: "1" },
+    { userID: "361", candidateID: "2" },
+    { userID: "371", candidateID: "3" },
+    { userID: "381", candidateID: "1" },
+    { userID: "391", candidateID: "2" },
+  ];
 
-  decryptor.decrypt(combinedResultCan1, plainTextResultCan1);
-  decryptor.decrypt(combinedResultCan2, plainTextResultCan2);
-  decryptor.decrypt(combinedResultCan3, plainTextResultCan3);
+  // Example usage
+  users.forEach(({ userID }) => {
+    const candidateID = candidates[Math.floor(Math.random() * candidates.length)];
+    encryptAndStoreVote({ userID, candidateID });
+  });
 
-  console.log("Final Tally for Candidate A:", batchEncoder.decode(plainTextResultCan1)[0]);
-  console.log("Final Tally for Candidate B:", batchEncoder.decode(plainTextResultCan2)[0]);
-  console.log("Final Tally for Candidate C:", batchEncoder.decode(plainTextResultCan3)[0]);
+  // Length of users
+  console.log("Number of Users:", users.length);
+
+  // When ready to tally
+  retrieveAndTallyVotes(encryptedVotesStorage);
 })();
