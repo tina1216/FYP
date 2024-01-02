@@ -9,9 +9,6 @@ const showAllCandidates = async (req, res) => {
 };
 
 // update result
-
-// find by election id
-
-// find by id
+const updateResult = (req, res) => {};
 
 module.exports = { showAllCandidates };

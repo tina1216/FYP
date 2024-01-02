@@ -1,9 +1,11 @@
 // route
 const express = require("express");
 const voteRoutes = express.Router();
-const { showAllVotes } = require("../controllers/vote");
+const voteController = require("../controllers/vote.js");
 const errorHandler = require("../../errorHandler.js");
+const { isAuthenticated } = require("../middlewares/auth.js");
 
-voteRoutes.get("/", errorHandler(showAllVotes));
+voteRoutes.post("/vote", isAuthenticated, voteController.castVote);
+voteRoutes.get("/tally/:electionId", voteController.tallyVotes);
 
 module.exports = voteRoutes;

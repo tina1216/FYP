@@ -32,6 +32,8 @@ model Election {
   electionName   String
   electionStatus Status      @default(UPCOMING)
   Candidate      Candidate[]
+  Result         Result[]
+  Vote           Vote[]
 }
 
 // a candidate in an election
@@ -50,16 +52,19 @@ model Candidate {
 model Vote {
   id            Int      @id @default(autoincrement())
   voterId       Int
+  electionId    Int
   encryptedVote String
   createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  Election      Election @relation(fields: [electionId], references: [id])
 }
 
 // result for each candidate
 model Result {
   id                 Int       @id @default(autoincrement())
   candidateId        Int
+  electionId         Int
   TotalEncryptedVote String
+  Election           Election  @relation(fields: [electionId], references: [id])
   Candidate          Candidate @relation(fields: [candidateId], references: [id])
 }
 

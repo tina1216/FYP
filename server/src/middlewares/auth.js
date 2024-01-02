@@ -4,7 +4,7 @@ const jsonwebtoken = require("jsonwebtoken");
 const UnauthorizedException = require("../exception/unauthorized.js");
 
 const isAuthenticated = (req, res, next) => {
-  const token = req.headers.accesstoken;
+  const token = req.headers.authorization;
 
   if (!token) {
     next(new UnauthorizedException("Unauthorized", ErrorCode.UNAUTHORIZED));

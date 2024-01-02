@@ -195,40 +195,61 @@ async function main() {
   });
 
   // vote
-  const createManyVotes = await prisma.vote.createMany({
-    data: [
-      {
-        voterId: 1,
-        encryptedVote: "candidate A", //candidate name -> Id
-      },
-      {
-        voterId: 2,
-        encryptedVote: "candidate B", //candidate name -> Id
-      },
-      {
-        voterId: 3,
-        encryptedVote: "candidate C", //candidate name -> Id
-      },
-    ],
-  });
+  // const createManyVotes = await prisma.vote.createMany({
+  //   data: [
+  //     {
+  //       voterId: 1,
+  //       electionId: 1,
+  //       encryptedVote: "1",
+  //     },
+  //     {
+  //       voterId: 2,
+  //       electionId: 2,
+  //       encryptedVote: "2",
+  //     },
+  //     {
+  //       voterId: 3,
+  //       electionId: 3,
+  //       encryptedVote: "3",
+  //     },
+  //     {
+  //       voterId: 1,
+  //       electionId: 3,
+  //       encryptedVote: "1",
+  //     },
+  //     {
+  //       voterId: 2,
+  //       electionId: 3,
+  //       encryptedVote: "2",
+  //     },
+  //     {
+  //       voterId: 3,
+  //       electionId: 3,
+  //       encryptedVote: "3",
+  //     },
+  //   ],
+  // });
 
   // results
-  const createManyResults = await prisma.result.createMany({
-    data: [
-      {
-        candidateId: 1,
-        TotalEncryptedVote: "145", // count total votes -> decrypt
-      },
-      {
-        candidateId: 2,
-        TotalEncryptedVote: "110",
-      },
-      {
-        candidateId: 3,
-        TotalEncryptedVote: "220",
-      },
-    ],
-  });
+  // const createManyResults = await prisma.result.createMany({
+  //   data: [
+  //     {
+  //       candidateId: 1,
+  //       electionId: 1,
+  //       TotalEncryptedVote: "145", // count total votes -> decrypt
+  //     },
+  //     {
+  //       candidateId: 2,
+  //       electionId: 1,
+  //       TotalEncryptedVote: "110",
+  //     },
+  //     {
+  //       candidateId: 3,
+  //       electionId: 1,
+  //       TotalEncryptedVote: "220",
+  //     },
+  //   ],
+  // });
 }
 
 main()
