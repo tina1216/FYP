@@ -18,22 +18,33 @@ model RefreshToken {
 }
 
 model Voter {
-  id           Int            @id @default(autoincrement())
-  idNumber     String         @unique
+  id           Int             @id @default(autoincrement())
+  idNumber     String          @unique
   password     String
-  role         Role           @default(USER)
-  hasVoted     Boolean        @default(false)
+  role         Role            @default(USER)
   RefreshToken RefreshToken[]
-  updatedAt    DateTime       @updatedAt
+  elections    ElectionVoter[]
+  updatedAt    DateTime        @updatedAt
 }
 
 model Election {
-  id             Int         @id @default(autoincrement())
+  id             Int             @id @default(autoincrement())
   electionName   String
-  electionStatus Status      @default(UPCOMING)
+  electionStatus Status          @default(UPCOMING)
   Candidate      Candidate[]
   Result         Result[]
   Vote           Vote[]
+  voters         ElectionVoter[]
+}
+
+// Add a new model for the many-to-many relationship between Voter and Election
+model ElectionVoter {
+  id         Int      @id @default(autoincrement())
+  voterId    Int
+  electionId Int
+  voter      Voter    @relation(fields: [voterId], references: [id])
+  election   Election @relation(fields: [electionId], references: [id])
+  hasVoted   Boolean
 }
 
 // a candidate in an election

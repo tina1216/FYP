@@ -51,6 +51,7 @@ const encryptVote = (vote) => {
 const tallyVotes = (encryptedVotes) => {
   let totalEncryptedVoteCounts = seal.CipherText();
   const zeroPlainText = seal.PlainText();
+
   batchEncoder.encode(Int32Array.from(new Array(1).fill(0)), zeroPlainText);
   encryptor.encrypt(zeroPlainText, totalEncryptedVoteCounts);
 
@@ -69,25 +70,19 @@ const tallyVotes = (encryptedVotes) => {
   return voteCounts;
 };
 
-// const encryptVote = (candidateId) => {
-//   try {
-//     if (!encryptor || !batchEncoder) {
-//       throw new Error("Encryption not initialized.");
-//     }
-
-//     const votePlainText = seal.PlainText();
-//     batchEncoder.encode(Int32Array.from([candidateId]), votePlainText);
-//     const encryptedVote = seal.CipherText();
-//     encryptor.encrypt(votePlainText, encryptedVote);
-
-//     return encryptedVote.save();
-//   } catch (err) {
-//     console.error("Error at encryptVote: ", err);
-//   }
-// };
+const decryptVote = (encryptedVote) => {
+  const encryptedVoteObj = seal.CipherText();
+  encryptedVoteObj.load(context, encryptedVote);
+  const decryptedVotePlainText = seal.PlainText();
+  decryptor.decrypt(encryptedVoteObj, decryptedVotePlainText);
+  const decryptedVoteArray = batchEncoder.decode(decryptedVotePlainText);
+  console.log(decryptedVoteArray[0]);
+  return decryptedVoteArray[0]; // Assuming the vote is represented as a single integer
+};
 
 module.exports = {
   initializeEncryption,
   encryptVote,
   tallyVotes,
+  decryptVote,
 };

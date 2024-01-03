@@ -7,10 +7,17 @@ const encryptAndStoreVote = async (voterId, candidateId, electionId) => {
     where: {
       id: voterId,
     },
+    include: {
+      elections: {
+        where: {
+          electionId: electionId,
+        },
+      },
+    },
   });
 
-  if (voter.hasVoted) {
-    throw new Error("Voter has already voted.");
+  if (voter.elections.length > 0) {
+    throw new Error("Voter has already voted in this election.");
   }
 
   //  Verify election status
@@ -23,7 +30,7 @@ const encryptAndStoreVote = async (voterId, candidateId, electionId) => {
   }
 
   const election = await db.election.findUnique({
-    where: { id: candidate.electionId },
+    where: { id: electionId },
   });
 
   if (election.electionStatus !== "ACTIVE") {
@@ -44,80 +51,61 @@ const encryptAndStoreVote = async (voterId, candidateId, electionId) => {
   });
 
   // Update the voter's status
-  await db.voter.update({
-    where: {
-      id: voterId,
+  // Associate the election with the voter by creating a new ElectionVoter record
+  await db.electionVoter.create({
+    data: {
+      voter: {
+        connect: {
+          id: voterId,
+        },
+      },
+      election: {
+        connect: {
+          id: electionId,
+        },
+      },
+      hasVoted: true,
     },
-    data: { hasVoted: true },
   });
 
   return "Vote cast successfully.";
 };
 
-const retrieveAndTallyVotes = async (electionId) => {
+const countVotesForCandidates = async (electionId) => {
   const electionIdInt = parseInt(electionId);
 
-  const encryptedVotes = await db.vote.findMany({
+  // Get a list of candidates in the election
+  const candidates = await db.candidate.findMany({
     where: { electionId: electionIdInt },
-    select: { encryptedVote: true },
   });
 
-  console.log(encryptedVotes);
+  // Initialize a map to store candidate vote counts
+  const candidateVoteCounts = {};
 
-  // decrypt each vote and tally the results
-  const results = sealUtils.tallyVotes(encryptedVotes);
+  // Retrieve all votes for the given election
+  const votes = await db.vote.findMany({
+    where: { electionId: electionIdInt },
+    select: { voterId: true, encryptedVote: true },
+  });
+
+  // Decrypt and tally the votes for each candidate
+  votes.forEach((vote) => {
+    const candidateId = sealUtils.decryptVote(vote.encryptedVote); // Decrypt the vote
+    if (candidateId in candidateVoteCounts) {
+      candidateVoteCounts[candidateId]++;
+    } else {
+      candidateVoteCounts[candidateId] = 1;
+    }
+  });
+
+  // Create a result object with candidate vote counts
+  const results = candidates.map((candidate) => ({
+    candidateId: candidate.id,
+    candidateName: candidate.candidateName,
+    voteCount: candidateVoteCounts[candidate.id] || 0,
+  }));
 
   return results;
 };
-// const voteForCandidate = async (voterId, candidateId) => {
-//   // Step 1: Authentication is handled outside this function using JWT
 
-//   // Step 2: Check if the voter has already voted
-//   const voter = await db.voter.findUnique({
-//     where: {
-//       id: voterId,
-//     },
-//   });
-
-//   if (voter.hasVoted) {
-//     throw new Error("Voter has already voted.");
-//   }
-
-//   // Step 3: Verify election status
-//   const candidate = await db.candidate.findUnique({
-//     where: { id: candidateId },
-//   });
-
-//   if (!candidate) {
-//     throw new Error("Candidate not found.");
-//   }
-
-//   const election = await db.election.findUnique({
-//     where: { id: candidate.electionId },
-//   });
-
-//   if (election.electionStatus !== "ACTIVE") {
-//     throw new Error("Election is not active.");
-//   }
-
-//   // Step 4: Create a Vote record
-//   const encryptedVote = encryptVote(candidateId); // Implement your encryption logic
-//   await db.vote.create({
-//     data: {
-//       voterId: voterId,
-//       encryptedVote: encryptedVote,
-//     },
-//   });
-
-//   // Step 5: Update the voter's status
-//   await db.voter.update({
-//     where: {
-//       id: voterId,
-//     },
-//     data: { hasVoted: true },
-//   });
-
-//   return "Vote cast successfully.";
-// };
-
-module.exports = { encryptAndStoreVote, retrieveAndTallyVotes };
+module.exports = { encryptAndStoreVote, countVotesForCandidates };
