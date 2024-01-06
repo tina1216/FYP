@@ -1,5 +1,7 @@
 const { db } = require("../utils/db");
-const sealUtils = require("../utils/encryption");
+const encryptionUtils = require("../utils/encryption");
+
+const config = require("../config/config");
 
 const encryptAndStoreVote = async (voterId, candidateId, electionId) => {
   // Check if the voter has already voted
@@ -37,8 +39,10 @@ const encryptAndStoreVote = async (voterId, candidateId, electionId) => {
     throw new Error("Election is not active.");
   }
 
-  // encode the vote and encrypt it using SEAL
-  const encryptedVote = sealUtils.encryptVote(candidateId);
+  // encode the vote and encrypt it
+  const encryptedVote = encryptionUtils.encryptData(candidateId, config.ENCRYPTION_PASSWORD);
+
+  console.log("encryptedVote: ", encryptedVote);
 
   // Save the encrypted vote in the Vote model
   await db.vote.create({
@@ -51,7 +55,6 @@ const encryptAndStoreVote = async (voterId, candidateId, electionId) => {
   });
 
   // Update the voter's status
-  // Associate the election with the voter by creating a new ElectionVoter record
   await db.electionVoter.create({
     data: {
       voter: {
@@ -90,7 +93,7 @@ const countVotesForCandidates = async (electionId) => {
 
   // Decrypt and tally the votes for each candidate
   votes.forEach((vote) => {
-    const candidateId = sealUtils.decryptVote(vote.encryptedVote); // Decrypt the vote
+    const candidateId = encryptionUtils.decryptData(vote.encryptedVote, config.ENCRYPTION_PASSWORD); // Decrypt the vote
     if (candidateId in candidateVoteCounts) {
       candidateVoteCounts[candidateId]++;
     } else {
@@ -108,4 +111,35 @@ const countVotesForCandidates = async (electionId) => {
   return results;
 };
 
-module.exports = { encryptAndStoreVote, countVotesForCandidates };
+const countAllVotes = async () => {
+  const candidates = await db.candidate.findMany();
+
+  // Initialize a map to store candidate vote counts
+  const candidateVoteCounts = {};
+
+  // Retrieve all votes for the given election
+  const votes = await db.vote.findMany({
+    select: { voterId: true, encryptedVote: true },
+  });
+
+  // Decrypt and tally the votes for each candidate
+  votes.forEach((vote) => {
+    const candidateId = encryptionUtils.decryptData(vote.encryptedVote, config.ENCRYPTION_PASSWORD); // Decrypt the vote
+    if (candidateId in candidateVoteCounts) {
+      candidateVoteCounts[candidateId]++;
+    } else {
+      candidateVoteCounts[candidateId] = 1;
+    }
+  });
+
+  // Create a result object with candidate vote counts
+  const results = candidates.map((candidate) => ({
+    candidateId: candidate.id,
+    candidateName: candidate.candidateName,
+    voteCount: candidateVoteCounts[candidate.id] || 0,
+  }));
+
+  return results;
+};
+
+module.exports = { encryptAndStoreVote, countVotesForCandidates, countAllVotes };

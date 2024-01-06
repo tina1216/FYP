@@ -1,88 +1,143 @@
-const SEAL = require("node-seal");
+const crypto = require("node:crypto");
+require("dotenv").config({ path: "../../.env" });
 
-let seal, encryptor, batchEncoder, context, evaluator, decryptor;
+// Get encryption/decryption algorithm
+function getAlgorithm() {
+  return "aes-256-gcm";
+}
 
-const initializeEncryption = async () => {
+// Get encrypted string prefix
+function getEncryptedPrefix() {
+  return "enc::";
+}
+
+// Derive 256 bit encryption key from password, using salt and iterations -> 32 bytes
+function deriveKeyFromPassword(password, salt, iterations) {
+  return crypto.pbkdf2Sync(password, salt, iterations, 32, "sha512");
+}
+
+// Encrypt AES 256 GCM
+function encryptData(plainText, password) {
   try {
-    seal = await SEAL();
-
-    const schemeType = seal.SchemeType.bfv;
-    const securityLevel = seal.SecurityLevel.tc128;
-    const polyModulusDegree = 4096;
-    const bitSizes = [36, 36, 37];
-    const bitSize = 20;
-
-    const encParms = seal.EncryptionParameters(schemeType);
-    encParms.setPolyModulusDegree(polyModulusDegree);
-    encParms.setCoeffModulus(
-      seal.CoeffModulus.Create(polyModulusDegree, Int32Array.from(bitSizes))
-    );
-    encParms.setPlainModulus(seal.PlainModulus.Batching(polyModulusDegree, bitSize));
-
-    context = seal.Context(encParms, true, securityLevel);
-    if (!context.parametersSet()) {
-      throw new Error("Could not set the parameters in the given context.");
+    if (typeof plainText === "object") {
+      plainText = JSON.stringify(plainText);
+    } else {
+      plainText = String(plainText);
     }
 
-    const keyGenerator = seal.KeyGenerator(context);
-    const secretKey = keyGenerator.secretKey();
-    const publicKey = keyGenerator.createPublicKey();
+    const algorithm = getAlgorithm();
 
-    evaluator = seal.Evaluator(context);
-    batchEncoder = seal.BatchEncoder(context);
-    encryptor = seal.Encryptor(context, publicKey);
-    decryptor = seal.Decryptor(context, secretKey);
-  } catch (err) {
-    console.log("Error at initializeEncryption: ", err);
+    // Generate random salt -> 64 bytes
+    const salt = crypto.randomBytes(64);
+
+    // Generate random initialization vector -> 16 bytes
+    const iv = crypto.randomBytes(16);
+
+    // Generate random count of iterations between 10.000 - 99.999 -> 5 bytes
+    const iterations = Math.floor(Math.random() * (99999 - 10000 + 1)) + 10000;
+
+    // Derive encryption key
+    const encryptionKey = deriveKeyFromPassword(
+      password,
+      salt,
+      Math.floor(iterations * 0.47 + 1337)
+    );
+
+    // Create cipher
+    const cipher = crypto.createCipheriv(algorithm, encryptionKey, iv);
+
+    // Update the cipher with data to be encrypted and close cipher
+    const encryptedData = Buffer.concat([cipher.update(plainText, "utf8"), cipher.final()]);
+
+    // Get authTag from cipher for decryption // 16 bytes
+    const authTag = cipher.getAuthTag();
+
+    // Join all data into single string, include requirements for decryption
+    const output = Buffer.concat([
+      salt,
+      iv,
+      authTag,
+      Buffer.from(iterations.toString()),
+      encryptedData,
+    ]).toString("hex");
+
+    return getEncryptedPrefix() + output;
+  } catch (error) {
+    console.error("Encryption failed!");
+    console.error(error);
+    return undefined;
   }
-};
+}
 
-const encryptVote = (vote) => {
-  // Example: encode the vote as a number
-  const votePlainText = seal.PlainText();
-  batchEncoder.encode(Int32Array.from([vote]), votePlainText);
-  const encryptedVote = seal.CipherText();
-  encryptor.encrypt(votePlainText, encryptedVote);
+// Decrypt AES 256 GCM
+function decryptData(cipherText, password) {
+  try {
+    const algorithm = getAlgorithm();
 
-  // Serialize and return the encrypted vote
-  return encryptedVote.save();
-};
+    const cipherTextParts = cipherText.split(getEncryptedPrefix());
 
-const tallyVotes = (encryptedVotes) => {
-  let totalEncryptedVoteCounts = seal.CipherText();
-  const zeroPlainText = seal.PlainText();
+    // If it's not encrypted by this, reject with undefined
+    if (cipherTextParts.length !== 2) {
+      console.error(
+        "Could not determine the beginning of the cipherText. Maybe not encrypted by this method."
+      );
+      return undefined;
+    } else {
+      cipherText = cipherTextParts[1];
+    }
 
-  batchEncoder.encode(Int32Array.from(new Array(1).fill(0)), zeroPlainText);
-  encryptor.encrypt(zeroPlainText, totalEncryptedVoteCounts);
+    const inputData = Buffer.from(cipherText, "hex");
 
-  encryptedVotes.forEach(({ encryptedVote }) => {
-    const encryptedVoteObj = seal.CipherText();
-    encryptedVoteObj.load(context, encryptedVote);
-    totalEncryptedVoteCounts = seal
-      .Evaluator(context)
-      .add(totalEncryptedVoteCounts, encryptedVoteObj);
-  });
+    // Split cipherText into partials
+    const salt = inputData.slice(0, 64);
+    const iv = inputData.slice(64, 80);
+    const authTag = inputData.slice(80, 96);
+    const iterations = parseInt(inputData.slice(96, 101).toString("utf-8"), 10);
+    const encryptedData = inputData.slice(101);
 
-  const plainTextResult = seal.PlainText();
-  decryptor.decrypt(totalEncryptedVoteCounts, plainTextResult);
-  const voteCounts = batchEncoder.decode(plainTextResult);
+    // Derive key
+    const decryptionKey = deriveKeyFromPassword(
+      password,
+      salt,
+      Math.floor(iterations * 0.47 + 1337)
+    );
 
-  return voteCounts;
-};
+    // Create decipher
+    const decipher = crypto.createDecipheriv(algorithm, decryptionKey, iv);
+    decipher.setAuthTag(authTag);
 
-const decryptVote = (encryptedVote) => {
-  const encryptedVoteObj = seal.CipherText();
-  encryptedVoteObj.load(context, encryptedVote);
-  const decryptedVotePlainText = seal.PlainText();
-  decryptor.decrypt(encryptedVoteObj, decryptedVotePlainText);
-  const decryptedVoteArray = batchEncoder.decode(decryptedVotePlainText);
-  console.log(decryptedVoteArray[0]);
-  return decryptedVoteArray[0]; // Assuming the vote is represented as a single integer
-};
+    // Decrypt data
+    const decrypted = decipher.update(encryptedData, "binary", "utf-8") + decipher.final("utf-8");
 
-module.exports = {
-  initializeEncryption,
-  encryptVote,
-  tallyVotes,
-  decryptVote,
-};
+    try {
+      return JSON.parse(decrypted);
+    } catch (error) {
+      return decrypted;
+    }
+  } catch (error) {
+    console.error("Decryption failed!");
+    console.error(error);
+    return undefined;
+  }
+}
+
+// Test data
+// const testMessage = 13;
+// const password = "84de5a81ac1071484643d282956d41dc"; // Ideally, use a more secure password in real applications
+
+// // Encrypt the message
+// const encryptedMessage = encryptData(testMessage, password);
+// console.log("Encrypted Message:", encryptedMessage);
+
+// // Decrypt the message
+// const decryptedMessage = decryptData(encryptedMessage, password);
+// console.log("Decrypted Message:", decryptedMessage);
+
+// // Check if the original and decrypted messages match
+// if (testMessage === decryptedMessage) {
+//   console.log("Success: The decrypted message matches the original!");
+// } else {
+//   console.log("Error: The decrypted message does not match the original.");
+// }
+
+module.exports = { encryptData, decryptData };

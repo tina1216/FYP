@@ -8,7 +8,4 @@ const showAllCandidates = async (req, res) => {
   res.json(allCandidates);
 };
 
-// update result
-const updateResult = (req, res) => {};
-
 module.exports = { showAllCandidates };

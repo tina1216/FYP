@@ -2,26 +2,14 @@ const { db } = require("../utils/db");
 
 // find all candidates
 function findAllCandidate() {
-  return db.candidate.findMany();
-}
-
-// find by election id
-function findCandidateByElectionId(electionId) {
-  return db.candidate.findUnique({
+  return db.candidate.findMany({
     where: {
-      electionId,
+      Election: {
+        electionStatus: "ACTIVE",
+      },
     },
-  });
-}
-
-// find by id
-function findCandidateByCandidateId(candidateId) {
-  return db.candidate.update({
-    where: {
-      id: candidateId,
-    },
-    data: {
-      Result,
+    include: {
+      Election: true, // This includes the related Election data in the result
     },
   });
 }

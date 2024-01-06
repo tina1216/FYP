@@ -2,6 +2,7 @@ const { hashSync, compareSync } = require("bcrypt");
 const { v4: uuidv4 } = require("uuid");
 const jsonwebtoken = require("jsonwebtoken");
 
+const config = require("../config/config");
 const badRequestsException = require("../exception/badRequests.js");
 const ErrorCode = require("../exception/root.js");
 const { UnprocessableEntity } = require("../exception/validation.js");
@@ -84,7 +85,7 @@ const refreshToken = async (req, res) => {
     throw new Error("Missing refresh token.");
   }
 
-  const payload = jsonwebtoken.verify(refreshToken, process.env.JWT_REFRESH_SECRET);
+  const payload = jsonwebtoken.verify(refreshToken, config.JWT_REFRESH_SECRET);
   const savedRefreshToken = await findRefreshTokenById(payload.jti);
 
   if (!savedRefreshToken || savedRefreshToken.revoked === true) {

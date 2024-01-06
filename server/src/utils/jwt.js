@@ -1,4 +1,5 @@
 const jsonwebtoken = require("jsonwebtoken");
+const config = require("../config/config");
 
 // Base64URL Section
 function base64url(source) {
@@ -21,7 +22,7 @@ const generateAccessToken = (voter) => {
       voterId: voter.id,
       idNumber: voter.idNumber,
     },
-    process.env.JWT_ACCESS_SECRET,
+    config.JWT_ACCESS_SECRET,
     {
       expiresIn: "5m",
     }
@@ -35,7 +36,7 @@ const generateRefreshToken = (voter, jti) => {
       idNumber: voter.idNumber,
       jti,
     },
-    process.env.JWT_REFRESH_SECRET,
+    config.JWT_REFRESH_SECRET,
     {
       expiresIn: "8h",
     }

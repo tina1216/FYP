@@ -14,7 +14,7 @@ const castVote = async (req, res) => {
   }
 };
 
-const tallyVotes = async (req, res) => {
+const tallyVotesByCandidate = async (req, res) => {
   const { electionId } = req.params;
   try {
     const results = await voteService.countVotesForCandidates(electionId);
@@ -24,4 +24,13 @@ const tallyVotes = async (req, res) => {
   }
 };
 
-module.exports = { castVote, tallyVotes };
+const tallyAllVotes = async (req, res) => {
+  try {
+    const results = await voteService.countAllVotes();
+    res.status(200).json(results);
+  } catch (error) {
+    res.status(500).send(error.message);
+  }
+};
+
+module.exports = { castVote, tallyVotesByCandidate, tallyAllVotes };

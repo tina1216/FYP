@@ -2,6 +2,7 @@ const express = require("express");
 const { ErrorCode } = require("../exception/root.js");
 const jsonwebtoken = require("jsonwebtoken");
 const UnauthorizedException = require("../exception/unauthorized.js");
+const config = require("../config/config");
 
 const isAuthenticated = (req, res, next) => {
   const token = req.headers.authorization;
@@ -11,7 +12,7 @@ const isAuthenticated = (req, res, next) => {
   }
 
   try {
-    const payload = jsonwebtoken.verify(token, process.env.JWT_ACCESS_SECRET);
+    const payload = jsonwebtoken.verify(token, config.JWT_ACCESS_SECRET);
     req.voter = payload;
     next();
   } catch (err) {
