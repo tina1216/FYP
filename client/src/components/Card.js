@@ -18,7 +18,7 @@ export default function Card({ card, onClick, isActive }) {
         ></input>
 
         <div className="flex-shrink-0">
-          <img className="w-8 h-8 rounded-full" src={card.image} alt={card.main} />
+          {/* <img className="w-8 h-8 rounded-full" src={card.image} alt={card.main} /> */}
         </div>
         <div className="flex-1 min-w-0">
           {card.sub ? (
