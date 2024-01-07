@@ -14,7 +14,6 @@ export default function Confirm() {
   const accessToken = auth?.accessToken;
 
   const { data: candidate, loading, error } = fetchData(`/candidate/${selectedId}`, accessToken);
-  console.log("Confirm.js candidate: ", candidate);
 
   useEffect(() => {
     if (candidate) {
@@ -42,12 +41,9 @@ export default function Confirm() {
         }
       );
 
-      // Handle the response here, e.g., navigate to a success page or show a success message
-      console.log("Vote successful:", response.data);
       navigate("/submitted");
     } catch (error) {
       console.error("Error submitting vote:", error);
-      // Handle errors, e.g., show an error message
     }
   };
 
@@ -60,7 +56,7 @@ export default function Confirm() {
       <section className="bg-gray-50 dark:bg-gray-900">
         <div className="gap-6 flex flex-col items-center justify-center px-6 py-8 mx-auto md:h-screen lg:py-0">
           <h1 className="text-xl font-sans font-bold leading-tight tracking-tight text-gray-900 md:text-2xl dark:text-white">
-            確認画面
+            Confirm
           </h1>
 
           <div className="w-full md:mt-0 sm:max-w-md xl:p-0">

@@ -1,7 +1,7 @@
 import { useRef, useState, useEffect, useContext } from "react";
 import axios from "../services/api";
 import AuthContext from "../context/authProvider";
-import { useNavigate } from "react-router";
+import { useNavigate } from "react-router-dom";
 const LOGIN_URL = "/auth/login";
 
 export default function Login() {
@@ -12,26 +12,11 @@ export default function Login() {
 
   const [idNumber, setIdNumber] = useState("");
   const [password, setPassword] = useState("");
-  const [role, setRole] = useState("");
   const [errMsg, setErrMsg] = useState("");
-  const [success, setSuccess] = useState(false);
 
   useEffect(() => {
-    if (idNumberRef.current) {
-      idNumberRef.current.focus();
-    }
+    idNumberRef.current?.focus();
   }, []);
-
-  useEffect(() => {
-    setErrMsg("");
-    if (success) {
-      if (role === "ADMIN") {
-        navigate("/result");
-      } else {
-        navigate("/select");
-      }
-    }
-  }, [idNumber, password, success, role, navigate]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -39,20 +24,25 @@ export default function Login() {
       const response = await axios.post(
         LOGIN_URL,
         { idNumber, password },
-        {
-          withCredentials: true,
-        }
+        { withCredentials: true }
       );
-      const accessToken = response?.data?.accessToken;
-      console.log("Login.js accessToken: ", accessToken);
-      const roles = response?.data?.existingVoter.role;
-      const voterId = response?.data?.existingVoter.voterId;
+      const { accessToken, existingVoter } = response.data;
+      const hasVoted = existingVoter?.hasVoted;
 
-      setAuth({ idNumber, password, roles, accessToken, voterId });
-      setIdNumber("");
-      setPassword("");
-      setRole(roles);
-      setSuccess(true);
+      setAuth({
+        idNumber,
+        password,
+        role: existingVoter.role,
+        accessToken,
+        voterId: existingVoter.voterId,
+        hasVoted,
+      });
+
+      if (existingVoter.role === "ADMIN" || hasVoted) {
+        navigate("/result");
+      } else {
+        navigate("/select");
+      }
     } catch (err) {
       if (!err?.response) {
         setErrMsg("No Server Response");
@@ -63,9 +53,7 @@ export default function Login() {
       } else {
         setErrMsg("Login Failed");
       }
-      if (errRef.current) {
-        errRef.current.focus();
-      }
+      errRef.current?.focus();
     }
   };
 

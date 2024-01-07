@@ -11,7 +11,6 @@ const getAllCandidates = async (req, res) => {
 const getCandidateById = async (req, res) => {
   try {
     const candidateId = req.params.id;
-    console.log("candidateId: ", candidateId);
     const candidateById = await candidateService.findCandidateById(candidateId);
     res.json(candidateById);
   } catch (error) {

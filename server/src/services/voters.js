@@ -6,6 +6,9 @@ function findVoterByIdNumber(idNumber) {
     where: {
       idNumber,
     },
+    include: {
+      elections: true,
+    },
   });
 }
 

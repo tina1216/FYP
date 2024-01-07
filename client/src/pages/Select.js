@@ -18,8 +18,10 @@ export default function Select() {
   useEffect(() => {
     if (fetchedCandidates && fetchedCandidates.length > 0) {
       setCurrentCandidates(fetchedCandidates);
+    } else if (error) {
+      navigate("/404");
     }
-  }, [fetchedCandidates]);
+  }, [fetchedCandidates, error, navigate]);
 
   const handleSelectedItem = (obj) => {
     setActiveId(obj.id);
@@ -36,8 +38,7 @@ export default function Select() {
   };
 
   if (loading) return <p>Loading candidates...</p>;
-  if (error) return <p>Error loading candidates!</p>;
-  if (error) return console.log(error); //testing purpose
+  if (error) return null;
 
   return (
     <>

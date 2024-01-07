@@ -9,36 +9,35 @@ export default function useFetch(url, token) {
 
   useEffect(() => {
     const fetchData = async () => {
+      setError(null); // Reset error state
       setLoading(true);
       try {
-        // Include the Authorization header with the token
-        const res = await axios.get(url, {
-          headers: {
-            Authorization: `${token}`,
-          },
+        const response = await axios.get(url, {
+          headers: token ? { Authorization: `${token}` } : {},
         });
-        setData(res.data);
-      } catch (error) {
-        setError(error);
+        setData(response.data);
+      } catch (err) {
+        setError(err.response ? err.response.data : "An error occurred");
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     };
 
-    // Only fetch data if token is provided
-    if (token) {
-      fetchData();
-    }
+    fetchData();
   }, [url, token]);
 
   const reFetch = async () => {
     setLoading(true);
     try {
-      const res = await axios.get(url);
-      setData(res.data);
+      const response = await axios.get(url, {
+        headers: token ? { Authorization: `${token}` } : {},
+      });
+      setData(response.data);
     } catch (err) {
-      setError(err);
+      setError(err.response ? err.response.data : "An error occurred");
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   return { data, loading, error, reFetch };

@@ -60,20 +60,37 @@ const login = async (req, res) => {
   const jti = uuidv4();
   const { accessToken, refreshToken } = generateTokens(existingVoter, jti);
   await addRefreshTokenToWhitelist({ jti, refreshToken, voterId: existingVoter.id });
+  const hasVoted = existingVoter.elections.some((electionVoter) => electionVoter.hasVoted);
 
   res.json({
-    existingVoter,
+    existingVoter: {
+      ...existingVoter,
+      hasVoted,
+    },
     accessToken,
     refreshToken,
   });
 };
 
-// /profile
-const profile = async (req, res) => {
-  const voterId = req.voter.voterId;
-  const voter = await findVoterById(voterId);
-  delete voter.password;
-  res.send(voter);
+//logout
+const logout = async (req, res) => {
+  try {
+    const { voterId } = req.body;
+    await revokeTokens(voterId);
+    res.status(200).json({ message: "Successfully logged out." });
+  } catch (error) {
+    console.error(error); // Log the error for debugging
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+
+// This endpoint is only for demo purpose.
+// Move this logic where you need to revoke the tokens( for ex, on password reset)
+const revokeRefreshTokens = async (req, res) => {
+  console.log(`Revoking tokens for voterId: ${voterId}`);
+  const { voterId } = req.body;
+  await revokeTokens(voterId);
+  res.json({ message: `Tokens revoked for user with id #${voterId}` });
 };
 
 //refresh token
@@ -120,12 +137,4 @@ const refreshToken = async (req, res) => {
   });
 };
 
-// This endpoint is only for demo purpose.
-// Move this logic where you need to revoke the tokens( for ex, on password reset)
-const revokeRefreshTokens = async (req, res) => {
-  const { voterId } = req.body;
-  await revokeTokens(voterId);
-  res.json({ message: `Tokens revoked for user with id #${voterId}` });
-};
-
-module.exports = { login, signup, profile, refreshToken, revokeRefreshTokens };
+module.exports = { login, signup, refreshToken, revokeRefreshTokens, logout };

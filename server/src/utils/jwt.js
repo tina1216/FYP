@@ -47,9 +47,6 @@ function generateTokens(voter, jti) {
   const accessToken = generateAccessToken(voter);
   const refreshToken = generateRefreshToken(voter, jti);
 
-  console.log("generate accessToken", accessToken);
-  console.log("generate RefreshToken", refreshToken);
-
   return {
     accessToken,
     refreshToken,

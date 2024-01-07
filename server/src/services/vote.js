@@ -112,34 +112,47 @@ const countVotesForCandidates = async (electionId) => {
 };
 
 const countAllVotes = async () => {
+  const elections = await db.election.findMany();
   const candidates = await db.candidate.findMany();
 
-  // Initialize a map to store candidate vote counts
-  const candidateVoteCounts = {};
+  let resultsByElection = {};
 
-  // Retrieve all votes for the given election
-  const votes = await db.vote.findMany({
-    select: { voterId: true, encryptedVote: true },
-  });
+  for (const election of elections) {
+    let candidateVoteCounts = {};
 
-  // Decrypt and tally the votes for each candidate
-  votes.forEach((vote) => {
-    const candidateId = encryptionUtils.decryptData(vote.encryptedVote, config.ENCRYPTION_PASSWORD); // Decrypt the vote
-    if (candidateId in candidateVoteCounts) {
-      candidateVoteCounts[candidateId]++;
-    } else {
-      candidateVoteCounts[candidateId] = 1;
-    }
-  });
+    const votes = await db.vote.findMany({
+      where: { electionId: election.id },
+      select: { voterId: true, encryptedVote: true },
+    });
 
-  // Create a result object with candidate vote counts
-  const results = candidates.map((candidate) => ({
-    candidateId: candidate.id,
-    candidateName: candidate.candidateName,
-    voteCount: candidateVoteCounts[candidate.id] || 0,
-  }));
+    votes.forEach((vote) => {
+      const candidateId = encryptionUtils.decryptData(
+        vote.encryptedVote,
+        config.ENCRYPTION_PASSWORD
+      );
+      if (candidateId in candidateVoteCounts) {
+        candidateVoteCounts[candidateId]++;
+      } else {
+        candidateVoteCounts[candidateId] = 1;
+      }
+    });
 
-  return results;
+    let electionResults = candidates
+      .filter((candidate) => candidate.electionId === election.id)
+      .map((candidate) => ({
+        candidateId: candidate.id,
+        candidateName: candidate.candidateName,
+        detail: candidate.detail,
+        voteCount: candidateVoteCounts[candidate.id] || 0,
+      }));
+
+    resultsByElection[election.id] = {
+      electionName: election.electionName,
+      results: electionResults,
+    };
+  }
+
+  return resultsByElection;
 };
 
 module.exports = { encryptAndStoreVote, countVotesForCandidates, countAllVotes };

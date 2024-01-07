@@ -31,7 +31,6 @@ const findCandidateById = async (candidateId) => {
         Election: true,
       },
     });
-    console.log("Fetched candidate:", candidate); // Debugging log
 
     if (!candidate) {
       throw new Error("Candidate not found");
@@ -40,7 +39,6 @@ const findCandidateById = async (candidateId) => {
     if (candidate.Election && candidate.Election.electionStatus === "ACTIVE") {
       return candidate;
     } else {
-      console.log("Election data or status is missing:", candidate.Election); // Additional debugging log
       throw new Error("Related election is not active or not found.");
     }
   } catch (err) {
