@@ -14,4 +14,38 @@ function findAllCandidate() {
   });
 }
 
-module.exports = { findAllCandidate };
+// find a candidate by candidate id
+const findCandidateById = async (candidateId) => {
+  try {
+    if (candidateId === undefined || isNaN(candidateId)) {
+      throw new Error("Invalid candidate ID");
+    }
+
+    const candidateIdInt = parseInt(candidateId); // Convert candidateId to an integer
+
+    const candidate = await db.candidate.findUnique({
+      where: {
+        id: candidateIdInt, // Use the converted integer value
+      },
+      include: {
+        Election: true,
+      },
+    });
+    console.log("Fetched candidate:", candidate); // Debugging log
+
+    if (!candidate) {
+      throw new Error("Candidate not found");
+    }
+
+    if (candidate.Election && candidate.Election.electionStatus === "ACTIVE") {
+      return candidate;
+    } else {
+      console.log("Election data or status is missing:", candidate.Election); // Additional debugging log
+      throw new Error("Related election is not active or not found.");
+    }
+  } catch (err) {
+    console.log(err);
+  }
+};
+
+module.exports = { findAllCandidate, findCandidateById };

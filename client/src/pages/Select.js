@@ -1,26 +1,43 @@
-import React, { useState, useEffect } from "react";
-import Button from "../components/Button";
+import React, { useState, useEffect, useContext } from "react";
 import Card from "../components/Card";
+import { useNavigate } from "react-router-dom";
+import fetchData from "../hooks/fetchData";
+import AuthContext from "../context/authProvider";
 
 export default function Select() {
-  const [candidates, setCandidates] = useState([{}]);
+  const [currentCandidates, setCurrentCandidates] = useState([]);
   const [activeId, setActiveId] = useState("");
+  const navigate = useNavigate();
+  const isButtonDisabled = activeId === "";
+
+  const { auth } = useContext(AuthContext);
+  const accessToken = auth?.accessToken;
+
+  const { data: fetchedCandidates, loading, error } = fetchData("/candidate/all", accessToken);
 
   useEffect(() => {
-    fetch("/candidate/all")
-      .then((res) => res.json())
-      .then((data) => {
-        setCandidates(data);
-      });
-  }, []);
+    if (fetchedCandidates && fetchedCandidates.length > 0) {
+      setCurrentCandidates(fetchedCandidates);
+    }
+  }, [fetchedCandidates]);
 
   const handleSelectedItem = (obj) => {
     setActiveId(obj.id);
-    const updatedCandidates = candidates.map((candidate) =>
-      candidate.id === obj.id ? { ...obj } : candidate
+    const updatedCandidates = currentCandidates.map((candidate) =>
+      candidate.id === obj.id
+        ? { ...candidate, isSelected: true }
+        : { ...candidate, isSelected: false }
     );
-    setCandidates(updatedCandidates);
+    setCurrentCandidates(updatedCandidates);
   };
+
+  const onClickNext = () => {
+    navigate("/confirm", { state: { selectedId: activeId } });
+  };
+
+  if (loading) return <p>Loading candidates...</p>;
+  if (error) return <p>Error loading candidates!</p>;
+  if (error) return console.log(error); //testing purpose
 
   return (
     <>
@@ -33,7 +50,7 @@ export default function Select() {
           <div className="w-full md:mt-0 sm:max-w-md xl:p-0">
             <div className="mb-4 py-3 space-y-4 bg-white rounded-lg shadow dark:border md:space-y-6  dark:bg-gray-800 dark:border-gray-700">
               <ul className="divide-y divide-gray-200 dark:divide-gray-700">
-                {candidates.map((data, i) => {
+                {currentCandidates.map((data, i) => {
                   return (
                     <Card
                       key={i}
@@ -44,14 +61,22 @@ export default function Select() {
                         // image: data.image,
                       }}
                       onClick={() => handleSelectedItem(data)}
-                      isActive={activeId === data.id ? true : false}
+                      isActive={activeId === data.id}
                     ></Card>
                   );
                 })}
               </ul>
             </div>
-
-            <Button btn={{ text: "NEXT", color: "main", navigateTo: "confirm" }}></Button>
+            <button
+              type="submit"
+              className={`w-full font-sans text-white bg-primary-600 hover:bg-primary-700 focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800 ${
+                isButtonDisabled ? "opacity-50 cursor-not-allowed" : ""
+              }`}
+              onClick={onClickNext}
+              disabled={isButtonDisabled}
+            >
+              NEXT
+            </button>
           </div>
         </div>
       </section>

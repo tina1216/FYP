@@ -17,15 +17,15 @@ export default function Login() {
   const [success, setSuccess] = useState(false);
 
   useEffect(() => {
-    idNumberRef.current.focus();
+    if (idNumberRef.current) {
+      idNumberRef.current.focus();
+    }
   }, []);
 
   useEffect(() => {
     setErrMsg("");
     if (success) {
-      console.log("Role:", role); // Debugging log
       if (role === "ADMIN") {
-        console.log("Login successful, redirecting to admin");
         navigate("/result");
       } else {
         navigate("/select");
@@ -44,9 +44,11 @@ export default function Login() {
         }
       );
       const accessToken = response?.data?.accessToken;
+      console.log("Login.js accessToken: ", accessToken);
       const roles = response?.data?.existingVoter.role;
+      const voterId = response?.data?.existingVoter.voterId;
 
-      setAuth({ idNumber, password, roles, accessToken });
+      setAuth({ idNumber, password, roles, accessToken, voterId });
       setIdNumber("");
       setPassword("");
       setRole(roles);
@@ -61,7 +63,9 @@ export default function Login() {
       } else {
         setErrMsg("Login Failed");
       }
-      errRef.current.focus();
+      if (errRef.current) {
+        errRef.current.focus();
+      }
     }
   };
 
@@ -74,9 +78,19 @@ export default function Login() {
               <h1 className="text-xl font-sans font-bold leading-tight tracking-tight text-gray-900 md:text-2xl dark:text-white">
                 Sign in to your account
               </h1>
-              <p ref={errRef} className={errMsg ? "errmsg" : "offscreen"} aria-live="assertive">
-                {errMsg}
-              </p>
+              {errMsg ? (
+                <div
+                  ref={errRef}
+                  className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative"
+                >
+                  <span className="block font-sans sm:inline">
+                    <p>{errMsg}</p>
+                  </span>
+                </div>
+              ) : (
+                ""
+              )}
+
               <form onSubmit={handleSubmit} className="space-y-4 md:space-y-6" action="#">
                 <div>
                   <label

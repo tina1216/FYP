@@ -1,6 +1,6 @@
 import Login from "./pages/Login";
 import Select from "./pages/Select";
-import Comfirm from "./pages/Comfirm";
+import Confirm from "./pages/Confirm";
 import Result from "./pages/Result";
 import Submitted from "./pages/Submitted";
 
@@ -12,7 +12,7 @@ const App = () => {
       <Routes>
         <Route path="/" element={<Login />} />
         <Route path="/select" element={<Select />} />
-        <Route path="/comfirm" element={<Comfirm />} />
+        <Route path="/confirm" element={<Confirm />} />
         <Route path="/submitted" element={<Submitted />} />
         <Route path="/result" element={<Result />} />
       </Routes>

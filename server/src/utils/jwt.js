@@ -24,7 +24,7 @@ const generateAccessToken = (voter) => {
     },
     config.JWT_ACCESS_SECRET,
     {
-      expiresIn: "5m",
+      expiresIn: "10m",
     }
   );
 };
