@@ -32,7 +32,6 @@ model Election {
   electionName   String
   electionStatus Status          @default(UPCOMING)
   Candidate      Candidate[]
-  Result         Result[]
   Vote           Vote[]
   voters         ElectionVoter[]
 }
@@ -55,7 +54,6 @@ model Candidate {
   candidateName String
   detail        String?
   Election      Election @relation(fields: [electionId], references: [id])
-  Result        Result[]
 }
 
 // a vote by a user
@@ -69,15 +67,6 @@ model Vote {
   Election      Election @relation(fields: [electionId], references: [id])
 }
 
-// result for each candidate
-model Result {
-  id                 Int       @id @default(autoincrement())
-  candidateId        Int
-  electionId         Int
-  TotalEncryptedVote String
-  Election           Election  @relation(fields: [electionId], references: [id])
-  Candidate          Candidate @relation(fields: [candidateId], references: [id])
-}
 
 enum Role {
   USER

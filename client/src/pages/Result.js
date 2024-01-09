@@ -12,15 +12,18 @@ export default function Result() {
   if (error) return <p>Error: {error.message}</p>;
 
   return (
-    <section className="flex flex-col justify-center h-screenbg-gray-50 dark:bg-gray-900">
-      <div className="gap-6 flex flex-col items-center justify-center px-6 py-8 lg:py-0">
+    <section className="w-full flex flex-col justify-center antialiased bg-gray-50 dark:bg-gray-900">
+      <div className="w-full h-full gap-6 flex flex-col items-center justify-center  px-6 pb-8 pt-24">
         <h1 className="text-xl font-sans font-bold leading-tight tracking-tight text-gray-900 mt-6 md:text-2xl dark:text-white">
           Result
         </h1>
 
         {Object.entries(results).map(([electionId, { electionName, results }]) => (
-          <div key={electionId} className="pb-4">
-            <h2 className="text-base text-left font-sans font-bold leading-tight tracking-tight text-gray-900 mb-3 pl-1 md:text-xl dark:text-white">
+          <div
+            key={electionId}
+            className="w-full max-w-2xl mx-auto rounded-sm border border-gray-200"
+          >
+            <h2 className="text-base text-left font-sans font-bold leading-tight tracking-tight text-gray-900 mb-3 pl-1 md:text-l dark:text-white">
               Election: {electionName}
             </h2>
             <Table data={results} />

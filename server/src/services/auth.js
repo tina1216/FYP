@@ -21,11 +21,10 @@ function findRefreshTokenById(id) {
   });
 }
 
-// soft delete tokens after usage.
-function deleteRefreshToken(id) {
-  return db.refreshToken.update({
+function revokeTokens(voterId) {
+  return db.refreshToken.updateMany({
     where: {
-      id,
+      voterId,
     },
     data: {
       revoked: true,
@@ -33,10 +32,11 @@ function deleteRefreshToken(id) {
   });
 }
 
-function revokeTokens(voterId) {
-  return db.refreshToken.updateMany({
+// soft delete tokens after usage.
+function deleteRefreshToken(id) {
+  return db.refreshToken.update({
     where: {
-      voterId,
+      id,
     },
     data: {
       revoked: true,
