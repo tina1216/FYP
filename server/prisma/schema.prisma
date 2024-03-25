@@ -1,0 +1,80 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model RefreshToken {
+  id          String   @id @unique @default(uuid())
+  hashedToken String
+  voterId     Int
+  Voter       Voter    @relation(fields: [voterId], references: [id], onDelete: Cascade)
+  revoked     Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Voter {
+  id           Int             @id @default(autoincrement())
+  idNumber     String          @unique
+  password     String
+  role         Role            @default(USER)
+  RefreshToken RefreshToken[]
+  elections    ElectionVoter[]
+  updatedAt    DateTime        @updatedAt
+}
+
+model Election {
+  id             Int             @id @default(autoincrement())
+  electionName   String
+  electionStatus Status          @default(UPCOMING)
+  Candidate      Candidate[]
+  Vote           Vote[]
+  voters         ElectionVoter[]
+}
+
+// Add a new model for the many-to-many relationship between Voter and Election
+model ElectionVoter {
+  id         Int      @id @default(autoincrement())
+  voterId    Int
+  electionId Int
+  voter      Voter    @relation(fields: [voterId], references: [id])
+  election   Election @relation(fields: [electionId], references: [id])
+  hasVoted   Boolean
+}
+
+// a candidate in an election
+// related to an election
+model Candidate {
+  id            Int      @id @default(autoincrement())
+  electionId    Int
+  candidateName String
+  detail        String?
+  Election      Election @relation(fields: [electionId], references: [id])
+}
+
+// a vote by a user
+// encrypted vote is candidateId
+model Vote {
+  id            Int      @id @default(autoincrement())
+  voterId       Int
+  electionId    Int
+  encryptedVote String
+  createdAt     DateTime @default(now())
+  Election      Election @relation(fields: [electionId], references: [id])
+}
+
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum Status {
+  ACTIVE
+  CLOSED
+  UPCOMING
+}
