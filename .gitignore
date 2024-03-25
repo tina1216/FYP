@@ -5,7 +5,7 @@ dist/
 .idea
 
 migrations/
-**/.vscode/
+**.vscode
 dev.db
 
 
