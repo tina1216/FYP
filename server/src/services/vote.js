@@ -42,8 +42,6 @@ const encryptAndStoreVote = async (voterId, candidateId, electionId) => {
   // encode the vote and encrypt it
   const encryptedVote = encryptionUtils.encryptData(candidateId, config.ENCRYPTION_PASSWORD);
 
-  console.log("encryptedVote: ", encryptedVote);
-
   // Save the encrypted vote in the Vote model
   await db.vote.create({
     data: {

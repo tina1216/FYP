@@ -121,23 +121,4 @@ function decryptData(cipherText, password) {
   }
 }
 
-// Test data
-// const testMessage = 13;
-// const password = "84de5a81ac1071484643d282956d41dc"; // Ideally, use a more secure password in real applications
-
-// // Encrypt the message
-// const encryptedMessage = encryptData(testMessage, password);
-// console.log("Encrypted Message:", encryptedMessage);
-
-// // Decrypt the message
-// const decryptedMessage = decryptData(encryptedMessage, password);
-// console.log("Decrypted Message:", decryptedMessage);
-
-// // Check if the original and decrypted messages match
-// if (testMessage === decryptedMessage) {
-//   console.log("Success: The decrypted message matches the original!");
-// } else {
-//   console.log("Error: The decrypted message does not match the original.");
-// }
-
 module.exports = { encryptData, decryptData };
