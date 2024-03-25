@@ -5,8 +5,9 @@ dist/
 .idea
 
 migrations/
-.vscode/
+.vscode
 dev.db
+
 
 # dependencies
 node_modules/
