@@ -3,11 +3,11 @@ const encryptionUtils = require("../utils/encryption");
 
 const config = require("../config/config");
 
-const encryptAndStoreVote = async (voterId, candidateId, electionId) => {
-  // Check if the voter has already voted
-  const voter = await db.voter.findUnique({
+const encryptAndStoreVote = async (userId, candidateId, electionId) => {
+  // Check if the user has already voted
+  const user = await db.user.findUnique({
     where: {
-      id: voterId,
+      id: userId,
     },
     include: {
       elections: {
@@ -18,8 +18,8 @@ const encryptAndStoreVote = async (voterId, candidateId, electionId) => {
     },
   });
 
-  if (voter.elections.length > 0) {
-    throw new Error("Voter has already voted in this election.");
+  if (user.elections.length > 0) {
+    throw new Error("User has already voted in this election.");
   }
 
   //  Verify election status
@@ -45,19 +45,19 @@ const encryptAndStoreVote = async (voterId, candidateId, electionId) => {
   // Save the encrypted vote in the Vote model
   await db.vote.create({
     data: {
-      voterId: voterId,
+      userId: userId,
       electionId: electionId,
       encryptedVote: encryptedVote,
       createdAt: new Date(),
     },
   });
 
-  // Update the voter's status
-  await db.electionVoter.create({
+  // Update the user's status
+  await db.electionUser.create({
     data: {
-      voter: {
+      user: {
         connect: {
-          id: voterId,
+          id: userId,
         },
       },
       election: {
@@ -86,7 +86,7 @@ const countVotesForCandidates = async (electionId) => {
   // Retrieve all votes for the given election
   const votes = await db.vote.findMany({
     where: { electionId: electionIdInt },
-    select: { voterId: true, encryptedVote: true },
+    select: { userId: true, encryptedVote: true },
   });
 
   // Decrypt and tally the votes for each candidate
@@ -120,7 +120,7 @@ const countAllVotes = async () => {
 
     const votes = await db.vote.findMany({
       where: { electionId: election.id },
-      select: { voterId: true, encryptedVote: true },
+      select: { userId: true, encryptedVote: true },
     });
 
     votes.forEach((vote) => {

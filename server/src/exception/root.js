@@ -14,6 +14,7 @@ const ErrorCode = {
   UNPROCESSABLE_ENTITY: 20001,
   INTERNAL_EXCEPTION: 3001,
   UNAUTHORIZED: 4001,
+  OTP_ERROR: 5001,
 };
 
 module.exports = { HttpException, ErrorCode };

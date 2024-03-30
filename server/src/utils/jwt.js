@@ -16,11 +16,11 @@ function base64url(source) {
   return encodedSource;
 }
 
-const generateAccessToken = (voter) => {
+const generateAccessToken = (user) => {
   return jsonwebtoken.sign(
     {
-      voterId: voter.id,
-      idNumber: voter.idNumber,
+      userId: user.id,
+      userId: user.userId,
     },
     config.JWT_ACCESS_SECRET,
     {
@@ -29,11 +29,11 @@ const generateAccessToken = (voter) => {
   );
 };
 
-const generateRefreshToken = (voter, jti) => {
+const generateRefreshToken = (user, jti) => {
   return jsonwebtoken.sign(
     {
-      voterId: voter.id,
-      idNumber: voter.idNumber,
+      userId: user.id,
+      userId: user.userId,
       jti,
     },
     config.JWT_REFRESH_SECRET,
@@ -43,9 +43,9 @@ const generateRefreshToken = (voter, jti) => {
   );
 };
 
-function generateTokens(voter, jti) {
-  const accessToken = generateAccessToken(voter);
-  const refreshToken = generateRefreshToken(voter, jti);
+function generateTokens(user, jti) {
+  const accessToken = generateAccessToken(user);
+  const refreshToken = generateRefreshToken(user, jti);
 
   return {
     accessToken,

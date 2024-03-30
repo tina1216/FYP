@@ -1,7 +1,8 @@
 const express = require("express");
 const {
-  login,
   signup,
+  login,
+  verifyOptForLogin,
   refreshToken,
   revokeRefreshTokens,
   logout,
@@ -16,5 +17,6 @@ authRoutes.post("/signup", errorHandler(signup));
 authRoutes.post("/refreshToken", errorHandler(refreshToken));
 authRoutes.post("/revokeRefreshTokens", errorHandler(revokeRefreshTokens));
 authRoutes.post("/logout", errorHandler(logout));
+authRoutes.post("/verify", errorHandler(verifyOptForLogin));
 
 module.exports = authRoutes;

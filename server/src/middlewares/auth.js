@@ -13,7 +13,7 @@ const isAuthenticated = (req, res, next) => {
 
   try {
     const payload = jsonwebtoken.verify(token, config.JWT_ACCESS_SECRET);
-    req.voter = payload;
+    req.user = payload;
     next();
   } catch (err) {
     res.status(401);

@@ -2,42 +2,6 @@ const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
 
 async function main() {
-  //voter admin
-  const userAdmin = await prisma.voter.upsert({
-    where: {
-      idNumber: "admin123",
-    },
-    update: {},
-    create: {
-      idNumber: "admin123",
-      password: "admin",
-      role: "ADMIN",
-    },
-  });
-
-  // voter voter1
-  const createManyVoters = await prisma.voter.createMany({
-    data: [
-      {
-        idNumber: "abc1234",
-        password: "abc_1234",
-        role: "USER",
-      },
-      {
-        idNumber: "AS1111",
-        password: "AA1111",
-      },
-      {
-        idNumber: "BC2345788",
-        password: "Xy_2345",
-      },
-      {
-        idNumber: "CD3456899",
-        password: "Yz_3456",
-      },
-    ],
-  });
-
   // election
   const createManyElections = await prisma.election.createMany({
     data: [
@@ -198,32 +162,32 @@ async function main() {
   // const createManyVotes = await prisma.vote.createMany({
   //   data: [
   //     {
-  //       voterId: 1,
+  //       userId: 1,
   //       electionId: 1,
   //       encryptedVote: "1",
   //     },
   //     {
-  //       voterId: 2,
+  //       userId: 2,
   //       electionId: 2,
   //       encryptedVote: "2",
   //     },
   //     {
-  //       voterId: 3,
+  //       userId: 3,
   //       electionId: 3,
   //       encryptedVote: "3",
   //     },
   //     {
-  //       voterId: 1,
+  //       userId: 1,
   //       electionId: 3,
   //       encryptedVote: "1",
   //     },
   //     {
-  //       voterId: 2,
+  //       userId: 2,
   //       electionId: 3,
   //       encryptedVote: "2",
   //     },
   //     {
-  //       voterId: 3,
+  //       userId: 3,
   //       electionId: 3,
   //       encryptedVote: "3",
   //     },
