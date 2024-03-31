@@ -3,11 +3,11 @@ const notFoundException = require("../exception/notFound.js");
 const voteService = require("../services/vote.js");
 
 const castVote = async (req, res) => {
-  const { userId } = req.user;
-  const { candidateId, id_election } = req.body;
+  const { userIdentifier } = req.user;
+  const { candidateId, electionId } = req.body;
 
   try {
-    await voteService.encryptAndStoreVote(userId, candidateId, id_election);
+    await voteService.encryptAndStoreVote(userIdentifier, candidateId, electionId);
     res.status(200).send("Vote recorded successfully");
   } catch (error) {
     res.status(500).send(error.message);
@@ -15,9 +15,9 @@ const castVote = async (req, res) => {
 };
 
 const tallyVotesByCandidate = async (req, res) => {
-  const { id_election } = req.params;
+  const { electionId } = req.params;
   try {
-    const results = await voteService.countVotesForCandidates(id_election);
+    const results = await voteService.countVotesForCandidates(electionId);
     res.status(200).json(results);
   } catch (error) {
     res.status(500).send(error.message);

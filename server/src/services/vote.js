@@ -3,16 +3,16 @@ const encryptionUtils = require("../utils/encryption");
 
 const config = require("../config/config");
 
-const encryptAndStoreVote = async (userId, candidateId, id_election) => {
+const encryptAndStoreVote = async (userIdentifier, candidateId, electionId) => {
   // Check if the user has already voted
   const user = await db.user.findUnique({
     where: {
-      id: userId,
+      id: userIdentifier,
     },
     include: {
       elections: {
         where: {
-          id_election: id_election,
+          electionId: electionId,
         },
       },
     },
@@ -32,7 +32,7 @@ const encryptAndStoreVote = async (userId, candidateId, id_election) => {
   }
 
   const election = await db.election.findUnique({
-    where: { id: id_election },
+    where: { id: electionId },
   });
 
   if (election.electionStatus !== "ACTIVE") {
@@ -45,8 +45,8 @@ const encryptAndStoreVote = async (userId, candidateId, id_election) => {
   // Save the encrypted vote in the Vote model
   await db.vote.create({
     data: {
-      userId: userId,
-      id_election: id_election,
+      userIdentifier: userIdentifier,
+      electionId: electionId,
       encryptedVote: encryptedVote,
       createdAt: new Date(),
     },
@@ -57,12 +57,12 @@ const encryptAndStoreVote = async (userId, candidateId, id_election) => {
     data: {
       user: {
         connect: {
-          id: userId,
+          id: userIdentifier,
         },
       },
       election: {
         connect: {
-          id: id_election,
+          id: electionId,
         },
       },
       hasVoted: true,
@@ -72,12 +72,12 @@ const encryptAndStoreVote = async (userId, candidateId, id_election) => {
   return "Vote cast successfully.";
 };
 
-const countVotesForCandidates = async (id_election) => {
-  const id_electionInt = parseInt(id_election);
+const countVotesForCandidates = async (electionId) => {
+  const electionIdInt = parseInt(electionId);
 
   // Get a list of candidates in the election
   const candidates = await db.candidate.findMany({
-    where: { id_election: id_electionInt },
+    where: { electionId: electionIdInt },
   });
 
   // Initialize a map to store candidate vote counts
@@ -85,8 +85,8 @@ const countVotesForCandidates = async (id_election) => {
 
   // Retrieve all votes for the given election
   const votes = await db.vote.findMany({
-    where: { id_election: id_electionInt },
-    select: { userId: true, encryptedVote: true },
+    where: { electionId: electionIdInt },
+    select: { userIdentifier: true, encryptedVote: true },
   });
 
   // Decrypt and tally the votes for each candidate
@@ -119,8 +119,8 @@ const countAllVotes = async () => {
     let candidateVoteCounts = {};
 
     const votes = await db.vote.findMany({
-      where: { id_election: election.id },
-      select: { userId: true, encryptedVote: true },
+      where: { electionId: election.id },
+      select: { userIdentifier: true, encryptedVote: true },
     });
 
     votes.forEach((vote) => {
@@ -136,7 +136,7 @@ const countAllVotes = async () => {
     });
 
     let electionResults = candidates
-      .filter((candidate) => candidate.id_election === election.id)
+      .filter((candidate) => candidate.electionId === election.id)
       .map((candidate) => ({
         candidateId: candidate.id,
         candidateName: candidate.candidateName,

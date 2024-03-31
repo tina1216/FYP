@@ -18,9 +18,9 @@ export default function Result() {
           Result
         </h1>
 
-        {Object.entries(results).map(([id_election, { electionName, results }]) => (
+        {Object.entries(results).map(([electionId, { electionName, results }]) => (
           <div
-            key={id_election}
+            key={electionId}
             className="w-full max-w-2xl mx-auto rounded-sm border border-gray-200"
           >
             <h2 className="text-base text-left font-sans font-bold leading-tight tracking-tight text-gray-900 mb-3 pl-1 md:text-l dark:text-white">

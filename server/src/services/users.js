@@ -1,10 +1,10 @@
 const bcrypt = require("bcrypt");
 const { db } = require("../utils/db");
 
-function findUserByUserId(userId) {
+function findUserByUserIdentifier(userIdentifier) {
   return db.user.findUnique({
     where: {
-      userId,
+      userIdentifier: userIdentifier,
     },
     include: {
       elections: true,
@@ -12,7 +12,7 @@ function findUserByUserId(userId) {
   });
 }
 
-function createUserByUserIdAndPassword(user) {
+function createUserWithCredentials(user) {
   user.password = bcrypt.hashSync(user.password, 10);
   return db.user.create({
     data: user,
@@ -28,7 +28,7 @@ function findUserById(id) {
 }
 
 module.exports = {
-  findUserByUserId,
+  findUserByUserIdentifier,
   findUserById,
-  createUserByUserIdAndPassword,
+  createUserWithCredentials,
 };

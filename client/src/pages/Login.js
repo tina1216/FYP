@@ -7,30 +7,34 @@ const LOGIN_URL = "/auth/login";
 export default function Login() {
   const { setAuth } = useContext(AuthContext);
   const navigate = useNavigate();
-  const userIdRef = useRef();
+  const userIdentifierRef = useRef();
   const errRef = useRef();
 
-  const [userId, setUserId] = useState("");
+  const [userIdentifier, setUserId] = useState("");
   const [password, setPassword] = useState("");
   const [errMsg, setErrMsg] = useState("");
 
   useEffect(() => {
-    userIdRef.current?.focus();
+    userIdentifierRef.current?.focus();
   }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.post(LOGIN_URL, { userId, password }, { withCredentials: true });
+      const response = await axios.post(
+        LOGIN_URL,
+        { userIdentifier, password },
+        { withCredentials: true }
+      );
       const { accessToken, existingUser } = response.data;
       const hasVoted = existingUser?.hasVoted;
 
       setAuth({
-        userId,
+        userIdentifier,
         password,
         role: existingUser.role,
         accessToken,
-        userId: existingUser.userId,
+        userIdentifier: existingUser.userIdentifier,
         hasVoted,
       });
 
@@ -77,19 +81,19 @@ export default function Login() {
             <form onSubmit={handleSubmit} className="space-y-4 md:space-y-6" action="#">
               <div>
                 <label
-                  htmlFor="userId"
+                  htmlFor="userIdentifier"
                   className="block mb-2 text-sm font-sans font-medium text-gray-900 dark:text-white"
                 >
                   Your ID
                 </label>
                 <input
                   type="text"
-                  name="userId"
-                  id="userId"
-                  ref={userIdRef}
+                  name="userIdentifier"
+                  id="userIdentifier"
+                  ref={userIdentifierRef}
                   autoComplete="off"
                   onChange={(e) => setUserId(e.target.value)}
-                  value={userId}
+                  value={userIdentifier}
                   required
                   className="bg-gray-50 border border-gray-300 font-sans text-gray-900 sm:text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                   placeholder="ID1234566"

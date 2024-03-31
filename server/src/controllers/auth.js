@@ -14,27 +14,27 @@ const {
   revokeTokens,
 } = require("../services/auth.js");
 const {
-  findUserByUserId,
-  createUserByUserIdAndPassword,
+  findUserByUserIdentifier,
+  createUserWithCredentials,
   findUserById,
 } = require("../services/users.js");
 const { generateTokens } = require("../utils/jwt.js");
 const { hashToken } = require("../utils/hashToken.js");
-const { generateAndSendOtp, verityOtp } = require("../utils/otp.js");
+const { generateAndSendOtp, verifyOtp } = require("../utils/otp.js");
 
 // signup
 const signup = async (req, res) => {
-  const { userId, password, email } = req.body;
+  const { userIdentifier, password, email } = req.body;
 
-  let user = await findUserByUserId(userId);
+  let user = await findUserByUserIdentifier(userIdentifier);
 
   if (user) {
     throw new badRequestsException("User already exists.", ErrorCode.USER_ALREADY_EXISTS);
   }
   const jti = uuidv4();
-  user = await createUserByUserIdAndPassword({ userId, password, email });
+  user = await createUserWithCredentials({ userIdentifier, password, email });
   const { accessToken, refreshToken } = generateTokens(user, jti);
-  await addRefreshTokenToWhitelist({ jti, refreshToken, id_user: user.id });
+  await addRefreshTokenToWhitelist({ jti, refreshToken, userId: user.id });
 
   res.json({
     user,
@@ -45,9 +45,9 @@ const signup = async (req, res) => {
 
 // login
 const login = async (req, res) => {
-  const { userId, password } = req.body;
+  const { userIdentifier, password } = req.body;
 
-  const existingUser = await findUserByUserId(userId);
+  const existingUser = await findUserByUserIdentifier(userIdentifier);
 
   if (!existingUser) {
     throw new notFoundException("Account not found.", ErrorCode.USER_NOT_FOUND);
@@ -57,20 +57,21 @@ const login = async (req, res) => {
     throw new badRequestsException("Incorrect password or ID number", ErrorCode.INCORRECT_PASSWORD);
   }
 
-  await generateAndSendOtp(existingUser.userId, existingUser.email);
+  await generateAndSendOtp(existingUser.id, existingUser.email);
 };
 
 // verify OTP for login
 const verifyOptForLogin = async (req, res) => {
-  const { userId, optCode } = req.body;
+  const { userIdentifier, optCode } = req.body;
 
-  const isValid = await verityOtp(userId, optCode);
+  const user = await findUserByUserIdentifier(userIdentifier);
+
+  const isValid = await verifyOtp(user.userId, optCode);
 
   if (!isValid) {
-    throw new OtpException("OTP is invaild or has expired");
+    throw new OtpException("OTP is invaild or has expired. Login failed.");
   }
 
-  const user = await findUserById(userId);
   const jti = uuidv4();
   const { accessToken, refreshToken } = generateTokens(user, jti);
   await addRefreshTokenToWhitelist({ jti, refreshToken, userId: user.id });
@@ -89,8 +90,8 @@ const verifyOptForLogin = async (req, res) => {
 //logout
 const logout = async (req, res) => {
   try {
-    const { id_user } = req.body;
-    await revokeTokens(id_user);
+    const { userId } = req.body;
+    await revokeTokens(userId);
     res.status(200).json({ message: "Successfully logged out." });
   } catch (error) {
     console.error(error); // Log the error for debugging
@@ -98,13 +99,13 @@ const logout = async (req, res) => {
   }
 };
 
-// This endpoint is only for demo purpose.
-// Move this logic where you need to revoke the tokens( for ex, on password reset)
+// only for demo purpose.
+// Move this logic where to revoke the tokens( for ex, on password reset)
 const revokeRefreshTokens = async (req, res) => {
-  console.log(`Revoking tokens for id_user: ${id_user}`);
-  const { id_user } = req.body;
-  await revokeTokens(id_user);
-  res.json({ message: `Tokens revoked for user with id #${id_user}` });
+  console.log(`Revoking tokens for userId: ${userId}`);
+  const { userId } = req.body;
+  await revokeTokens(userId);
+  res.json({ message: `Tokens revoked for user with id #${userId}` });
 };
 
 //refresh token
@@ -129,7 +130,7 @@ const refreshToken = async (req, res) => {
     throw new unauthorisedException("Unauthorized", ErrorCode.UNAUTHORIZED);
   }
 
-  const user = await findUserByUserId(payload.id_user);
+  const user = await findUserByUserId(payload.userId);
 
   if (!user) {
     throw new unauthorisedException("Unauthorized", ErrorCode.UNAUTHORIZED);
@@ -142,7 +143,7 @@ const refreshToken = async (req, res) => {
   await addRefreshTokenToWhitelist({
     jti,
     refreshToken: newRefreshToken,
-    id_user: user.id,
+    userId: user.id,
   });
 
   res.json({

@@ -1,6 +1,7 @@
 const otpGenerator = require("otp-generator");
 const sendEmail = require("./mailSender");
 const { db } = require("./db");
+const OtpException = require("../exception/OtpException");
 
 // Function to send OTP
 const generateAndSendOtp = async (userId, userEmail) => {
@@ -12,9 +13,13 @@ const generateAndSendOtp = async (userId, userEmail) => {
   const expiresAt = new Date();
   expiresAt.setMinutes(expiresAt.getMinutes() + 5);
 
+  console.log("Current time:", new Date());
+  console.log("OTP expiresAt:", expiresAt);
+  console.log("otpCode: ", otpCode);
+
   await db.otp.create({
     data: {
-      userId,
+      userId: userId,
       code: otpCode,
       expiresAt: expiresAt,
     },
@@ -24,16 +29,18 @@ const generateAndSendOtp = async (userId, userEmail) => {
 };
 
 // verify OTP
-const verityOtp = async (userId, otpCode) => {
+const verifyOtp = async (userId, otpCode) => {
   const otpRecord = await db.otp.findFirst({
     where: {
-      userId,
+      userId: userId,
       code: otpCode,
       expiresAt: {
-        gt: new Date(), // gt: greater than
+        gt: new Date(),
       },
     },
   });
+
+  console.log("otpRecord: \n", otpRecord);
 
   if (!otpRecord) {
     throw new OtpException("OTP is invaild or has expired");
@@ -51,4 +58,4 @@ const verityOtp = async (userId, otpCode) => {
   return true;
 };
 
-module.exports = { generateAndSendOtp, verityOtp };
+module.exports = { generateAndSendOtp, verifyOtp };
