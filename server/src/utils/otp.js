@@ -2,21 +2,19 @@ const otpGenerator = require("otp-generator");
 const sendEmail = require("./mailSender");
 const { db } = require("./db");
 
-// Function to generate and send OTP
+// Function to send OTP
 const generateAndSendOtp = async (userId, userEmail) => {
   const otpCode = otpGenerator.generate(6, {
     upperCaseAlphabets: false,
     specialChars: false,
     lowerCaseAlphabets: false,
-    // digits: true, // true by default
   });
-
   const expiresAt = new Date();
   expiresAt.setMinutes(expiresAt.getMinutes() + 5);
 
   await db.otp.create({
     data: {
-      userId: userId,
+      userId,
       code: otpCode,
       expiresAt: expiresAt,
     },
@@ -27,9 +25,9 @@ const generateAndSendOtp = async (userId, userEmail) => {
 
 // verify OTP
 const verityOtp = async (userId, otpCode) => {
-  const otpRecord = db.otp.findFirst({
+  const otpRecord = await db.otp.findFirst({
     where: {
-      userId: userId,
+      userId,
       code: otpCode,
       expiresAt: {
         gt: new Date(), // gt: greater than

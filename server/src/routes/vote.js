@@ -7,7 +7,7 @@ const { isAuthenticated } = require("../middlewares/auth.js");
 
 voteRoutes.post("/vote", isAuthenticated, voteController.castVote);
 
-voteRoutes.get("/tally/:electionId", voteController.tallyVotesByCandidate);
+voteRoutes.get("/tally/:id_election", voteController.tallyVotesByCandidate);
 
 voteRoutes.get("/tally", voteController.tallyAllVotes);
 

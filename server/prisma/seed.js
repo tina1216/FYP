@@ -36,122 +36,122 @@ async function main() {
   const createManyCandidates = await prisma.candidate.createMany({
     data: [
       {
-        electionId: 1,
+        id_election: "1",
         candidateName: "Alex Johnson",
         detail: "Liberty Party",
       },
       {
-        electionId: 1,
+        id_election: "1",
         candidateName: "Jordan Hayes",
         detail: "Centrist Movement",
       },
       {
-        electionId: 1,
+        id_election: "1",
         candidateName: "Grace Thompson",
         detail: "Visionary Party",
       },
       {
-        electionId: 1,
+        id_election: "1",
         candidateName: "Charlotte Nguyen",
         detail: "Renewal Party",
       },
       {
-        electionId: 2,
+        id_election: "2",
         candidateName: "Maria Rodriguez",
         detail: "Progressive Union",
       },
       {
-        electionId: 2,
+        id_election: "2",
         candidateName: "Isabella Garcia",
         detail: "Freedom Party",
       },
       {
-        electionId: 2,
+        id_election: "2",
         candidateName: "Liam Patel",
         detail: "Heritage Union",
       },
       {
-        electionId: 2,
+        id_election: "2",
         candidateName: "William Martinez",
         detail: "Equality Movement",
       },
       {
-        electionId: 3,
+        id_election: "3",
         candidateName: "Samuel Lee",
         detail: "Green Alliance",
       },
       {
-        electionId: 3,
+        id_election: "3",
         candidateName: "Ethan Wang",
         detail: "People's Voice",
       },
       {
-        electionId: 3,
+        id_election: "3",
         candidateName: "Emily Rivera",
         detail: "Citizens' Alliance",
       },
       {
-        electionId: 3,
+        id_election: "3",
         candidateName: "Sophie Hernandez",
         detail: "Sustainable Future",
       },
       {
-        electionId: 4,
+        id_election: "4",
         candidateName: "Emma Chen",
         detail: "National Coalition",
       },
       {
-        electionId: 4,
+        id_election: "4",
         candidateName: "Ava Martin",
         detail: "New Horizon Party",
       },
       {
-        electionId: 4,
+        id_election: "4",
         candidateName: "Mason Johnson",
         detail: "Progressive Network",
       },
       {
-        electionId: 4,
+        id_election: "4",
         candidateName: "Henry Taylor",
         detail: "National Prosperity League",
       },
       {
-        electionId: 5,
+        id_election: "5",
         candidateName: "David Smith",
         detail: "Democratic Front",
       },
       {
-        electionId: 5,
+        id_election: "5",
         candidateName: "Noah Kim",
         detail: "Solidarity Group",
       },
       {
-        electionId: 5,
+        id_election: "5",
         candidateName: "Zoe Wilson",
         detail: "Global Unity Party",
       },
       {
-        electionId: 5,
+        id_election: "5",
         candidateName: "Isabelle Anderson",
         detail: "Democratic Reform Group",
       },
       {
-        electionId: 6,
+        id_election: "6",
         candidateName: "Sophia Patel",
         detail: "Republican Circle",
       },
       {
-        electionId: 6,
+        id_election: "6",
         candidateName: "Olivia Brown",
         detail: "Justice League",
       },
       {
-        electionId: 6,
+        id_election: "6",
         candidateName: "Lucas Lee",
         detail: "Patriotic Front",
       },
       {
-        electionId: 6,
+        id_election: "6",
         candidateName: "Oliver Williams",
         detail: "Liberal Society",
       },
@@ -163,32 +163,32 @@ async function main() {
   //   data: [
   //     {
   //       userId: 1,
-  //       electionId: 1,
+  //       id_election: 1,
   //       encryptedVote: "1",
   //     },
   //     {
   //       userId: 2,
-  //       electionId: 2,
+  //       id_election: 2,
   //       encryptedVote: "2",
   //     },
   //     {
   //       userId: 3,
-  //       electionId: 3,
+  //       id_election: 3,
   //       encryptedVote: "3",
   //     },
   //     {
   //       userId: 1,
-  //       electionId: 3,
+  //       id_election: 3,
   //       encryptedVote: "1",
   //     },
   //     {
   //       userId: 2,
-  //       electionId: 3,
+  //       id_election: 3,
   //       encryptedVote: "2",
   //     },
   //     {
   //       userId: 3,
-  //       electionId: 3,
+  //       id_election: 3,
   //       encryptedVote: "3",
   //     },
   //   ],
@@ -199,17 +199,17 @@ async function main() {
   //   data: [
   //     {
   //       candidateId: 1,
-  //       electionId: 1,
+  //       id_election: 1,
   //       TotalEncryptedVote: "145", // count total votes -> decrypt
   //     },
   //     {
   //       candidateId: 2,
-  //       electionId: 1,
+  //       id_election: 1,
   //       TotalEncryptedVote: "110",
   //     },
   //     {
   //       candidateId: 3,
-  //       electionId: 1,
+  //       id_election: 1,
   //       TotalEncryptedVote: "220",
   //     },
   //   ],

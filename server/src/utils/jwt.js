@@ -19,7 +19,7 @@ function base64url(source) {
 const generateAccessToken = (user) => {
   return jsonwebtoken.sign(
     {
-      userId: user.id,
+      id_user: user.id,
       userId: user.userId,
     },
     config.JWT_ACCESS_SECRET,
@@ -32,7 +32,7 @@ const generateAccessToken = (user) => {
 const generateRefreshToken = (user, jti) => {
   return jsonwebtoken.sign(
     {
-      userId: user.id,
+      id_user: user.id,
       userId: user.userId,
       jti,
     },

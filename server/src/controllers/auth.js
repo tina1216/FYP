@@ -34,7 +34,7 @@ const signup = async (req, res) => {
   const jti = uuidv4();
   user = await createUserByUserIdAndPassword({ userId, password, email });
   const { accessToken, refreshToken } = generateTokens(user, jti);
-  await addRefreshTokenToWhitelist({ jti, refreshToken, userId: user.id });
+  await addRefreshTokenToWhitelist({ jti, refreshToken, id_user: user.id });
 
   res.json({
     user,
@@ -57,7 +57,7 @@ const login = async (req, res) => {
     throw new badRequestsException("Incorrect password or ID number", ErrorCode.INCORRECT_PASSWORD);
   }
 
-  await generateAndSendOtp(existingUser.id, existingUser.email);
+  await generateAndSendOtp(existingUser.userId, existingUser.email);
 };
 
 // verify OTP for login
@@ -89,8 +89,8 @@ const verifyOptForLogin = async (req, res) => {
 //logout
 const logout = async (req, res) => {
   try {
-    const { userId } = req.body;
-    await revokeTokens(userId);
+    const { id_user } = req.body;
+    await revokeTokens(id_user);
     res.status(200).json({ message: "Successfully logged out." });
   } catch (error) {
     console.error(error); // Log the error for debugging
@@ -101,10 +101,10 @@ const logout = async (req, res) => {
 // This endpoint is only for demo purpose.
 // Move this logic where you need to revoke the tokens( for ex, on password reset)
 const revokeRefreshTokens = async (req, res) => {
-  console.log(`Revoking tokens for userId: ${userId}`);
-  const { userId } = req.body;
-  await revokeTokens(userId);
-  res.json({ message: `Tokens revoked for user with id #${userId}` });
+  console.log(`Revoking tokens for id_user: ${id_user}`);
+  const { id_user } = req.body;
+  await revokeTokens(id_user);
+  res.json({ message: `Tokens revoked for user with id #${id_user}` });
 };
 
 //refresh token
@@ -129,7 +129,7 @@ const refreshToken = async (req, res) => {
     throw new unauthorisedException("Unauthorized", ErrorCode.UNAUTHORIZED);
   }
 
-  const user = await findUserByUserId(payload.userId);
+  const user = await findUserByUserId(payload.id_user);
 
   if (!user) {
     throw new unauthorisedException("Unauthorized", ErrorCode.UNAUTHORIZED);
@@ -142,7 +142,7 @@ const refreshToken = async (req, res) => {
   await addRefreshTokenToWhitelist({
     jti,
     refreshToken: newRefreshToken,
-    userId: user.id,
+    id_user: user.id,
   });
 
   res.json({

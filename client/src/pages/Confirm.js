@@ -8,7 +8,7 @@ export default function Confirm() {
   const location = useLocation();
   const navigate = useNavigate();
   const selectedId = location.state?.selectedId;
-  const [electionId, setElectionId] = useState(null);
+  const [id_election, setElectionId] = useState(null);
 
   const { auth } = useContext(AuthContext);
   const accessToken = auth?.accessToken;
@@ -17,9 +17,9 @@ export default function Confirm() {
 
   useEffect(() => {
     if (candidate) {
-      setElectionId(candidate.electionId);
+      setElectionId(candidate.id_election);
     }
-  }, [candidate, electionId]);
+  }, [candidate, id_election]);
 
   if (!selectedId) {
     // Redirect back to selection page or show a message
@@ -33,7 +33,7 @@ export default function Confirm() {
     try {
       const response = await axios.post(
         "/vote/vote",
-        { candidateId: selectedId, electionId: electionId },
+        { candidateId: selectedId, id_election: id_election },
         {
           headers: {
             Authorization: `${accessToken}`,

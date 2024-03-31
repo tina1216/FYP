@@ -10,15 +10,15 @@ datasource db {
 model RefreshToken {
   id          String   @id @unique @default(uuid())
   hashedToken String
-  userId      Int
-  User        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id_user     String
+  User        User     @relation(fields: [id_user], references: [id])
   revoked     Boolean  @default(false)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 }
 
 model User {
-  id           Int            @id @default(autoincrement())
+  id           String         @id @default(uuid())
   userId       String         @unique
   password     String
   email        String         @unique
@@ -31,9 +31,9 @@ model User {
 
 // OTP
 model Otp {
-  id        Int      @id @default(autoincrement())
-  userId    Int
-  user      User     @relation(fields: [userId], references: [id])
+  id        String   @id @default(uuid())
+  id_user   String
+  user      User     @relation(fields: [id_user], references: [userId])
   code      String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -41,7 +41,7 @@ model Otp {
 }
 
 model Election {
-  id             Int            @id @default(autoincrement())
+  id             String         @id @default(uuid())
   electionName   String
   electionStatus Status         @default(UPCOMING)
   Candidate      Candidate[]
@@ -51,33 +51,33 @@ model Election {
 
 // Add a new model for the many-to-many relationship between User and Election
 model ElectionUser {
-  id         Int      @id @default(autoincrement())
-  userId     Int
-  electionId Int
-  user       User     @relation(fields: [userId], references: [id])
-  election   Election @relation(fields: [electionId], references: [id])
-  hasVoted   Boolean
+  id          String   @id @default(uuid())
+  id_user     String
+  id_election String
+  user        User     @relation(fields: [id_user], references: [id])
+  election    Election @relation(fields: [id_election], references: [id])
+  hasVoted    Boolean
 }
 
 // a candidate in an election
 // related to an election
 model Candidate {
-  id            Int      @id @default(autoincrement())
-  electionId    Int
+  id            String   @id @default(uuid())
+  id_election   String
   candidateName String
   detail        String?
-  Election      Election @relation(fields: [electionId], references: [id])
+  Election      Election @relation(fields: [id_election], references: [id])
 }
 
 // a vote by a user
 // encrypted vote is candidateId
 model Vote {
-  id            Int      @id @default(autoincrement())
-  userId        Int
-  electionId    Int
+  id            String   @id @default(uuid())
+  id_user       String
+  id_election   String
   encryptedVote String
   createdAt     DateTime @default(now())
-  Election      Election @relation(fields: [electionId], references: [id])
+  Election      Election @relation(fields: [id_election], references: [id])
 }
 
 enum Role {

@@ -2,12 +2,12 @@ const { db } = require("../utils/db");
 const { hashToken } = require("../utils/hashToken");
 
 // used when we create a refresh token.
-function addRefreshTokenToWhitelist({ jti, refreshToken, userId }) {
+function addRefreshTokenToWhitelist({ jti, refreshToken, id_user }) {
   return db.refreshToken.create({
     data: {
       id: jti,
       hashedToken: hashToken(refreshToken),
-      userId,
+      id_user,
     },
   });
 }
@@ -21,10 +21,10 @@ function findRefreshTokenById(id) {
   });
 }
 
-function revokeTokens(userId) {
+function revokeTokens(id_user) {
   return db.refreshToken.updateMany({
     where: {
-      userId,
+      id_user,
     },
     data: {
       revoked: true,
